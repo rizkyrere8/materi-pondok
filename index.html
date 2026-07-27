@@ -4,346 +4,566 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Materi Pondok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-  :root{
-    --bg:#f6f7fb; --surface:#fff; --border:#e7e9f1;
-    --ink:#181b29; --ink-soft:#6b7080; --ink-faint:#9aa0b1;
-    --primary:#5b5bf0; --primary-soft:#ecebff;
-    --good:#19a463; --good-soft:#e6f7ee;
-    --warn:#d98c1c; --warn-soft:#fdf2e1;
-    --bad:#e5484d;  --bad-soft:#fdebec;
-    --radius:16px; --radius-sm:10px;
-    --shadow-sm:0 1px 3px rgba(20,24,45,.06);
-    --shadow-md:0 8px 24px rgba(30,34,60,.08);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:32px 16px 80px;min-height:100vh;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:860px;margin:0 auto;}
+:root{
+  --ink:#0f1117; --ink-2:#3d4259; --ink-3:#7c829a; --ink-4:#b0b5c8;
+  --bg:#f0f2f9; --surface:#ffffff; --surface-2:#f7f8fc;
+  --border:#e3e6f0; --border-2:#d0d4e8;
+  --primary:#4f46e5; --primary-light:#ede9fe; --primary-glow:rgba(79,70,229,.15);
+  --gold:#c8941a; --gold-light:#fef9ec; --gold-border:#f5dfa0;
+  --good:#0d9f6e; --good-light:#ecfdf6; --good-border:#a7f0d6;
+  --warn:#c27b17; --warn-light:#fffbeb; --warn-border:#fde68a;
+  --bad:#dc2626;  --bad-light:#fef2f2;  --bad-border:#fecaca;
+  --radius:20px; --radius-md:14px; --radius-sm:10px; --radius-xs:6px;
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow-xs:0 1px 3px rgba(15,17,23,.06);
+  --shadow-sm:0 2px 8px rgba(15,17,23,.08);
+  --shadow-md:0 8px 32px rgba(15,17,23,.10);
+  --shadow-lg:0 20px 60px rgba(15,17,23,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  padding-bottom:80px;
+}
 
-  /* ---- Topbar ---- */
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:12px;flex-wrap:wrap;}
-  .topbar-left{display:flex;align-items:center;gap:10px;}
-  .logo{width:36px;height:36px;border-radius:10px;background:var(--primary);display:flex;align-items:center;justify-content:center;}
-  .logo svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-  .app-title{font-size:17px;font-weight:700;color:var(--ink);}
-  .app-sub{font-size:12px;color:var(--ink-soft);margin-top:1px;}
-  .topbar-right{display:flex;gap:8px;align-items:center;}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;}
-  .btn:active{transform:scale(.97);}
-  .btn-primary{background:var(--primary);color:#fff;}
-  .btn-primary:hover{opacity:.88;}
-  .btn-ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--border);}
-  .btn-ghost:hover{background:var(--bg);}
+/* ===================== HERO ===================== */
+.hero{
+  background:linear-gradient(135deg,#1e1b4b 0%,#312e81 45%,#4338ca 100%);
+  padding:48px 20px 80px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-inner{max-width:860px;margin:0 auto;position:relative;}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:99px;
+  padding:5px 14px;
+  font-size:11px;font-weight:700;
+  color:rgba(255,255,255,.85);
+  letter-spacing:.6px;text-transform:uppercase;
+  margin-bottom:20px;
+  backdrop-filter:blur(8px);
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#34d399;
+  box-shadow:0 0 0 0 rgba(52,211,153,.5);
+  animation:livepulse 2s infinite;
+}
+@keyframes livepulse{
+  0%{box-shadow:0 0 0 0 rgba(52,211,153,.5);}
+  70%{box-shadow:0 0 0 8px rgba(52,211,153,0);}
+  100%{box-shadow:0 0 0 0 rgba(52,211,153,0);}
+}
+.hero h1{
+  font-size:clamp(28px,5vw,44px);
+  font-weight:800;
+  color:#fff;
+  line-height:1.15;
+  letter-spacing:-.5px;
+  margin-bottom:8px;
+}
+.hero h1 span{
+  background:linear-gradient(90deg,#a5b4fc,#c4b5fd);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{
+  font-size:15px;color:rgba(255,255,255,.6);
+  margin-bottom:32px;font-weight:500;
+}
+.hero-identity{
+  display:inline-flex;align-items:center;gap:0;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:var(--radius-md);
+  backdrop-filter:blur(12px);
+  overflow:hidden;
+}
+.hero-id-item{
+  padding:14px 22px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.hero-id-item + .hero-id-item{border-left:1px solid rgba(255,255,255,.15);}
+.hero-id-label{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.hero-id-val{font-size:16px;font-weight:700;color:#fff;}
+.hero-id-val.empty{color:rgba(255,255,255,.3);font-style:italic;font-weight:400;}
 
-  /* ---- Status bar ---- */
-  .status-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--radius-sm);background:var(--surface);border:1.5px solid var(--border);margin-bottom:20px;font-size:13px;color:var(--ink-soft);}
-  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--good);flex-shrink:0;}
-  .status-dot.loading{background:var(--warn);animation:pulse 1s infinite;}
-  .status-dot.error{background:var(--bad);}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+/* ===================== TOPBAR ACTIONS ===================== */
+.actions-bar{
+  max-width:860px;margin:-28px auto 0;
+  padding:0 20px;
+  position:relative;z-index:10;
+  display:flex;justify-content:flex-end;gap:8px;margin-bottom:24px;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;
+  border-radius:var(--radius-sm);
+  font-size:13px;font-weight:700;
+  cursor:pointer;border:none;
+  transition:all .15s;
+  font-family:var(--font);
+  letter-spacing:.1px;
+}
+.btn:active{transform:scale(.96);}
+.btn-export{
+  background:var(--surface);
+  color:var(--ink);
+  border:1.5px solid var(--border-2);
+  box-shadow:var(--shadow-sm);
+}
+.btn-export:hover{background:var(--surface-2);border-color:var(--primary);color:var(--primary);}
+.btn-export svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
-  /* ---- Identity card ---- */
-  .identity-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap;box-shadow:var(--shadow-sm);}
-  .identity-item{display:flex;flex-direction:column;gap:2px;}
-  .identity-label{font-size:11px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.5px;}
-  .identity-value{font-size:15px;font-weight:700;color:var(--ink);}
-  .identity-value.empty{color:var(--ink-faint);font-weight:400;font-style:italic;}
+/* ===================== MAIN CONTENT ===================== */
+.main{max-width:860px;margin:0 auto;padding:0 20px;}
 
-  /* ---- Summary strip ---- */
-  .summary-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
-  .summary-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow-sm);}
-  .summary-card .sc-label{font-size:11px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
-  .summary-card .sc-val{font-size:22px;font-weight:800;color:var(--ink);}
-  .summary-card .sc-val.good{color:var(--good);}
-  .summary-card .sc-val.warn{color:var(--warn);}
-  .summary-card .sc-val.bad{color:var(--bad);}
+/* ---- Summary cards ---- */
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:24px;
+}
+.sum-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:18px 20px;
+  box-shadow:var(--shadow-xs);
+  position:relative;overflow:hidden;
+}
+.sum-card::after{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:3px;
+  border-radius:0 0 var(--radius-md) var(--radius-md);
+}
+.sum-card.total::after{background:var(--primary);}
+.sum-card.pct::after{background:var(--good);}
+.sum-card.pct.warn-state::after{background:var(--warn);}
+.sum-card.pct.bad-state::after{background:var(--bad);}
+.sum-card.done::after{background:var(--gold);}
+.sum-label{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.sum-val{font-size:28px;font-weight:800;color:var(--ink);line-height:1;}
+.sum-val.colored-good{color:var(--good);}
+.sum-val.colored-warn{color:var(--warn);}
+.sum-val.colored-bad{color:var(--bad);}
+.sum-val.colored-gold{color:var(--gold);}
+.sum-sub{font-size:12px;color:var(--ink-3);margin-top:4px;font-weight:500;}
 
-  /* ---- Materi card ---- */
-  .materi-list{display:flex;flex-direction:column;gap:14px;}
-  .materi-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;}
-  .materi-header{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;user-select:none;}
-  .materi-header:hover{background:var(--bg);}
-  .materi-nama{font-size:15px;font-weight:700;color:var(--ink);flex:1;}
-  .pct-badge{font-size:13px;font-weight:700;padding:4px 10px;border-radius:20px;}
-  .pct-badge.good{background:var(--good-soft);color:var(--good);}
-  .pct-badge.warn{background:var(--warn-soft);color:var(--warn);}
-  .pct-badge.bad{background:var(--bad-soft);color:var(--bad);}
-  .chevron{width:18px;height:18px;stroke:var(--ink-faint);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;flex-shrink:0;}
-  .chevron.open{transform:rotate(180deg);}
+/* ---- Section label ---- */
+.section-label{
+  font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  /* ---- Progress bar ---- */
-  .prog-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:0 18px 4px;}
-  .prog-bar{height:100%;border-radius:3px;transition:width .4s;}
-  .prog-bar.good{background:var(--good);}
-  .prog-bar.warn{background:var(--warn);}
-  .prog-bar.bad{background:var(--bad);}
+/* ---- Materi cards ---- */
+.materi-list{display:flex;flex-direction:column;gap:10px;}
 
-  /* ---- Bab table ---- */
-  .bab-section{border-top:1.5px solid var(--border);padding:0 18px 14px;display:none;}
-  .bab-section.open{display:block;}
-  .bab-table{width:100%;border-collapse:collapse;margin-top:12px;}
-  .bab-table th{font-size:11px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;text-align:left;border-bottom:1.5px solid var(--border);}
-  .bab-table td{font-size:13px;color:var(--ink);padding:8px 8px;border-bottom:1px solid var(--border-soft, #eef0f6);}
-  .bab-table tr:last-child td{border-bottom:none;}
-  .bab-table td:nth-child(2),.bab-table th:nth-child(2){text-align:center;}
-  .bab-table td:nth-child(3),.bab-table th:nth-child(3){text-align:center;}
-  .mini-bar-wrap{width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px;}
-  .mini-bar{height:100%;border-radius:3px;}
-  .mini-bar.good{background:var(--good);}
-  .mini-bar.warn{background:var(--warn);}
-  .mini-bar.bad{background:var(--bad);}
+.materi-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-xs);
+  overflow:hidden;
+  transition:box-shadow .2s,border-color .2s;
+}
+.materi-card:hover{box-shadow:var(--shadow-sm);}
+.materi-card.open{border-color:var(--border-2);box-shadow:var(--shadow-md);}
 
-  /* ---- Empty ---- */
-  .empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft);}
-  .empty-state svg{width:48px;height:48px;stroke:var(--ink-faint);fill:none;stroke-width:1.5;margin-bottom:12px;}
-  .empty-title{font-size:16px;font-weight:700;margin-bottom:6px;color:var(--ink);}
+.materi-header{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 18px;
+  cursor:pointer;
+  user-select:none;
+}
+.materi-icon{
+  width:38px;height:38px;flex-shrink:0;
+  border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;
+  background:var(--primary-light);
+}
+.materi-info{flex:1;min-width:0;}
+.materi-nama{
+  font-size:14px;font-weight:700;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.materi-meta{font-size:12px;color:var(--ink-3);margin-top:2px;font-weight:500;}
+.pct-chip{
+  flex-shrink:0;
+  font-size:13px;font-weight:800;
+  padding:5px 12px;border-radius:99px;
+}
+.pct-chip.good{background:var(--good-light);color:var(--good);border:1px solid var(--good-border);}
+.pct-chip.warn{background:var(--warn-light);color:var(--warn);border:1px solid var(--warn-border);}
+.pct-chip.bad {background:var(--bad-light); color:var(--bad); border:1px solid var(--bad-border);}
+.chevron-icon{
+  width:18px;height:18px;flex-shrink:0;
+  stroke:var(--ink-4);fill:none;stroke-width:2.5;
+  stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.materi-card.open .chevron-icon{transform:rotate(180deg);}
 
-  /* ---- Realtime pulse ---- */
-  .live-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--good);background:var(--good-soft);padding:4px 10px;border-radius:20px;}
-  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--good);animation:pulse 1.4s infinite;}
+/* Progress bar */
+.prog-track{
+  height:4px;background:var(--bg);
+  margin:0 18px;
+}
+.prog-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.prog-fill.good{background:linear-gradient(90deg,var(--good),#34d399);}
+.prog-fill.warn{background:linear-gradient(90deg,var(--warn),#fbbf24);}
+.prog-fill.bad {background:linear-gradient(90deg,var(--bad),#f87171);}
 
-  @media(max-width:540px){
-    .summary-strip{grid-template-columns:repeat(2,1fr);}
-    .topbar{flex-direction:column;align-items:flex-start;}
-    .topbar-right{width:100%;}
-    .btn{flex:1;justify-content:center;}
-  }
+/* Bab table */
+.bab-section{
+  border-top:1.5px solid var(--border);
+  background:var(--surface-2);
+  display:none;
+  padding:4px 0 8px;
+}
+.materi-card.open .bab-section{display:block;}
+
+.bab-table{width:100%;border-collapse:collapse;}
+.bab-table thead tr{border-bottom:1px solid var(--border);}
+.bab-table th{
+  font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--ink-4);padding:8px 18px;text-align:left;
+}
+.bab-table th:nth-child(2){text-align:center;}
+.bab-table th:nth-child(3){text-align:right;}
+.bab-table td{
+  padding:9px 18px;
+  font-size:13px;font-weight:500;color:var(--ink-2);
+  border-bottom:1px solid var(--border);
+}
+.bab-table tr:last-child td{border-bottom:none;}
+.bab-table td:nth-child(2){text-align:center;color:var(--ink-3);}
+.bab-table td:nth-child(3){text-align:right;}
+.bab-nama{display:flex;align-items:center;gap:8px;}
+.bab-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.bab-dot.good{background:var(--good);}
+.bab-dot.warn{background:var(--warn);}
+.bab-dot.bad{background:var(--bad);}
+.mini-pct{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:700;
+}
+.mini-track{
+  width:60px;height:4px;background:var(--border);
+  border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;
+}
+.mini-fill{height:100%;border-radius:2px;}
+.mini-fill.good{background:var(--good);}
+.mini-fill.warn{background:var(--warn);}
+.mini-fill.bad{background:var(--bad);}
+.mini-num{font-size:12px;font-weight:700;}
+.mini-num.good{color:var(--good);}
+.mini-num.warn{color:var(--warn);}
+.mini-num.bad{color:var(--bad);}
+
+/* ---- Empty & Loading ---- */
+.state-box{
+  text-align:center;padding:72px 20px;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-md);
+}
+.state-icon{font-size:40px;margin-bottom:14px;}
+.state-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.state-sub{font-size:14px;color:var(--ink-3);}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--primary);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto 16px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---- Status pill ---- */
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;
+  padding:5px 12px;border-radius:99px;
+  position:fixed;bottom:24px;right:24px;z-index:100;
+  box-shadow:var(--shadow-md);
+  transition:all .3s;
+}
+.status-pill.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
+.status-pill.loading{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.status-pill.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+.status-pill .sdot{width:6px;height:6px;border-radius:50%;}
+.status-pill.ok .sdot{background:#10b981;}
+.status-pill.loading .sdot{background:#3b82f6;animation:pulse 1s infinite;}
+.status-pill.error .sdot{background:#ef4444;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+@media(max-width:600px){
+  .hero{padding:36px 16px 64px;}
+  .summary-grid{grid-template-columns:repeat(2,1fr);}
+  .hero-identity{flex-direction:column;width:100%;}
+  .hero-id-item + .hero-id-item{border-left:none;border-top:1px solid rgba(255,255,255,.15);}
+  .actions-bar{padding:0 16px;}
+  .main{padding:0 16px;}
+  .status-pill{bottom:16px;right:16px;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- Topbar -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="logo">
-        <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="live-dot" id="liveDot" style="background:#94a3b8"></span>
+      <span id="eyebrowText">Menghubungkan…</span>
+    </div>
+    <h1>Progres <span>Materi Pondok</span></h1>
+    <p class="hero-sub">Pantauan presentasi belajar — diperbarui secara langsung</p>
+    <div class="hero-identity" id="heroIdentity">
+      <div class="hero-id-item">
+        <div class="hero-id-label">Nama</div>
+        <div class="hero-id-val empty" id="idNama">—</div>
       </div>
-      <div>
-        <div class="app-title">Materi Pondok</div>
-        <div class="app-sub">Tampilan progres — hanya baca</div>
+      <div class="hero-id-item">
+        <div class="hero-id-label">Kelas</div>
+        <div class="hero-id-val empty" id="idKelas">—</div>
+      </div>
+      <div class="hero-id-item">
+        <div class="hero-id-label">Diperbarui</div>
+        <div class="hero-id-val" id="idUpdated" style="font-size:13px">—</div>
       </div>
     </div>
-    <div class="topbar-right">
-      <span class="live-pill" id="livePill" style="display:none">
-        <span class="live-dot"></span> LIVE
-      </span>
-      <button class="btn btn-ghost" onclick="exportHtml()">⬇ Ekspor HTML</button>
-    </div>
   </div>
+</div>
 
-  <!-- Status -->
-  <div class="status-bar" id="statusBar">
-    <span class="status-dot loading" id="statusDot"></span>
-    <span id="statusText">Memuat data dari server…</span>
-  </div>
+<!-- ACTIONS -->
+<div class="actions-bar">
+  <button class="btn btn-export" onclick="exportHtml()">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Ekspor HTML
+  </button>
+</div>
 
-  <!-- Identity -->
-  <div class="identity-card" id="identityCard" style="display:none">
-    <div class="identity-item">
-      <div class="identity-label">Nama</div>
-      <div class="identity-value" id="idNama">—</div>
-    </div>
-    <div class="identity-item">
-      <div class="identity-label">Kelas</div>
-      <div class="identity-value" id="idKelas">—</div>
-    </div>
-    <div class="identity-item">
-      <div class="identity-label">Terakhir diperbarui</div>
-      <div class="identity-value" id="idUpdated">—</div>
-    </div>
-  </div>
+<!-- MAIN -->
+<div class="main">
 
   <!-- Summary -->
-  <div class="summary-strip" id="summaryStrip" style="display:none">
-    <div class="summary-card">
-      <div class="sc-label">Total Materi</div>
-      <div class="sc-val" id="sumMateri">0</div>
+  <div class="summary-grid" id="summaryGrid" style="display:none">
+    <div class="sum-card total">
+      <div class="sum-label">Total Materi</div>
+      <div class="sum-val" id="sumTotal">0</div>
+      <div class="sum-sub" id="sumTotalSub">materi terdaftar</div>
     </div>
-    <div class="summary-card">
-      <div class="sc-label">Progres Keseluruhan</div>
-      <div class="sc-val" id="sumPct">0%</div>
+    <div class="sum-card pct" id="sumPctCard">
+      <div class="sum-label">Progres Keseluruhan</div>
+      <div class="sum-val colored-good" id="sumPct">0%</div>
+      <div class="sum-sub" id="sumPctSub">dari total halaman</div>
     </div>
-    <div class="summary-card">
-      <div class="sc-label">Materi Selesai</div>
-      <div class="sc-val good" id="sumSelesai">0</div>
+    <div class="sum-card done">
+      <div class="sum-label">Materi Selesai</div>
+      <div class="sum-val colored-gold" id="sumDone">0</div>
+      <div class="sum-sub" id="sumDoneSub">materi 100%</div>
     </div>
   </div>
 
-  <!-- Materi list -->
-  <div class="materi-list" id="materiList"></div>
+  <!-- List -->
+  <div class="section-label">Daftar Materi</div>
+  <div class="materi-list" id="materiList">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-title">Memuat data…</div>
+      <div class="state-sub">Mengambil data dari server</div>
+    </div>
+  </div>
+</div>
 
+<!-- Status pill -->
+<div class="status-pill loading" id="statusPill">
+  <span class="sdot"></span>
+  <span id="statusTxt">Memuat…</span>
 </div>
 
 <script>
-/* ---- Supabase ---- */
 const SUPA_URL = 'https://siinsjpvzwrriqwrbgpd.supabase.co';
 const SUPA_KEY = 'sb_publishable_SBjBS9QsXaruioOpKDtSVg_URP59zAw';
 const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-let appData    = [];
-let appIdent   = { nama:'', kelas:'' };
-let lastUpdate = null;
-let openState  = {}; // track bab collapse per materi
+let appData  = [];
+let appIdent = {nama:'', kelas:''};
+let lastUpd  = null;
+let openMap  = {};
 
 /* ---- Helpers ---- */
-function calcPersen(halaman, sisa){
-  const h = Number(halaman)||0, s = Math.min(Math.max(Number(sisa)||0,0),h);
-  if(h<=0) return 0;
-  return Math.round(((h-s)/h)*100);
-}
-function rowTotals(row){
-  return (row.bab||[]).reduce((a,b)=>({
-    halaman: a.halaman+(Number(b.halaman)||0),
-    sisa:    a.sisa+Math.min(Math.max(Number(b.sisa)||0,0),Number(b.halaman)||0)
-  }),{halaman:0,sisa:0});
-}
-function pctClass(pct){ return pct>=80?'good':pct>=40?'warn':'bad'; }
-function fmtTime(iso){
+const calcPct = (h,s) => {
+  h=Number(h)||0; s=Math.min(Math.max(Number(s)||0,0),h);
+  return h<=0?0:Math.round(((h-s)/h)*100);
+};
+const rowTot = row => (row.bab||[]).reduce((a,b)=>({
+  h:a.h+(Number(b.halaman)||0),
+  s:a.s+Math.min(Math.max(Number(b.sisa)||0,0),Number(b.halaman)||0)
+}),{h:0,s:0});
+const cls = pct => pct>=80?'good':pct>=40?'warn':'bad';
+const fmtTime = iso => {
   if(!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})+
-    ' '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-}
+  return new Date(iso).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+};
+const icons = ['📖','✏️','🔬','🌍','🕌','📐','🎨','🏛️','💡','📚'];
+const getIcon = (i) => icons[i % icons.length];
 
-/* ---- Status UI ---- */
+/* ---- Status ---- */
 function setStatus(msg, state='ok'){
-  document.getElementById('statusText').textContent = msg;
-  const dot = document.getElementById('statusDot');
-  dot.className = 'status-dot' + (state==='loading'?' loading':state==='error'?' error':'');
+  const p = document.getElementById('statusPill');
+  p.className = 'status-pill '+state;
+  document.getElementById('statusTxt').textContent = msg;
 }
 
 /* ---- Render ---- */
 function render(){
   // Identity
-  const ic = document.getElementById('identityCard');
   const nama  = appIdent.nama  || '';
   const kelas = appIdent.kelas || '';
-  if(nama||kelas){
-    ic.style.display='flex';
-    const nEl = document.getElementById('idNama');
-    const kEl = document.getElementById('idKelas');
-    nEl.textContent  = nama  || '—';
-    kEl.textContent  = kelas || '—';
-    nEl.className = 'identity-value'+(nama?'':' empty');
-    kEl.className = 'identity-value'+(kelas?'':' empty');
-  }
-  document.getElementById('idUpdated').textContent = lastUpdate ? fmtTime(lastUpdate) : '—';
+  const nEl = document.getElementById('idNama');
+  const kEl = document.getElementById('idKelas');
+  nEl.textContent = nama  || '—';
+  kEl.textContent = kelas || '—';
+  nEl.className = 'hero-id-val'+(nama?'':' empty');
+  kEl.className = 'hero-id-val'+(kelas?'':' empty');
+  document.getElementById('idUpdated').textContent = fmtTime(lastUpd);
 
   // Summary
-  const ss = document.getElementById('summaryStrip');
-  if(appData.length>0) ss.style.display='grid';
-  const grandH   = appData.reduce((a,r)=>a+rowTotals(r).halaman,0);
-  const grandS   = appData.reduce((a,r)=>a+rowTotals(r).sisa,0);
-  const grandPct = calcPersen(grandH,grandS);
-  const selesai  = appData.filter(r=>{ const t=rowTotals(r); return calcPersen(t.halaman,t.sisa)>=100; }).length;
-  const pctEl = document.getElementById('sumPct');
-  pctEl.textContent = grandPct+'%';
-  pctEl.className   = 'sc-val '+pctClass(grandPct);
-  document.getElementById('sumMateri').textContent  = appData.length;
-  document.getElementById('sumSelesai').textContent = selesai;
+  if(appData.length>0){
+    document.getElementById('summaryGrid').style.display='grid';
+    const gH = appData.reduce((a,r)=>a+rowTot(r).h,0);
+    const gS = appData.reduce((a,r)=>a+rowTot(r).s,0);
+    const gPct = calcPct(gH,gS);
+    const done = appData.filter(r=>{const t=rowTot(r);return calcPct(t.h,t.s)>=100;}).length;
+    document.getElementById('sumTotal').textContent   = appData.length;
+    document.getElementById('sumDone').textContent    = done;
+    const pEl = document.getElementById('sumPct');
+    pEl.textContent = gPct+'%';
+    pEl.className = 'sum-val colored-'+cls(gPct);
+    const pc = document.getElementById('sumPctCard');
+    pc.className = 'sum-card pct'+(gPct<80?(gPct<40?' bad-state':' warn-state'):'');
+  }
 
   // Materi list
   const list = document.getElementById('materiList');
   if(appData.length===0){
-    list.innerHTML=`<div class="empty-state">
-      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      <div class="empty-title">Belum ada data</div>
-      <div>Data akan muncul otomatis saat tersedia.</div>
+    list.innerHTML=`<div class="state-box">
+      <div class="state-icon">📭</div>
+      <div class="state-title">Belum ada data</div>
+      <div class="state-sub">Data akan muncul otomatis saat tersedia di kertas pantau.</div>
     </div>`;
     return;
   }
 
-  list.innerHTML = appData.map(row=>{
-    const totals = rowTotals(row);
-    const pct    = calcPersen(totals.halaman, totals.sisa);
-    const cls    = pctClass(pct);
-    const isOpen = openState[row.id] || false;
-    const babs   = (row.bab||[]).map(b=>{
-      const h   = Number(b.halaman)||0;
-      const s   = Math.min(Math.max(Number(b.sisa)||0,0),h);
-      const bp  = calcPersen(h,s);
-      const bc  = pctClass(bp);
+  list.innerHTML = appData.map((row,i)=>{
+    const t   = rowTot(row);
+    const pct = calcPct(t.h, t.s);
+    const c   = cls(pct);
+    const isOpen = openMap[row.id] || false;
+    const totalBab = (row.bab||[]).length;
+    const babRows = (row.bab||[]).map(b=>{
+      const bh = Number(b.halaman)||0;
+      const bs = Math.min(Math.max(Number(b.sisa)||0,0),bh);
+      const bp = calcPct(bh,bs);
+      const bc = cls(bp);
       return `<tr>
-        <td>${b.nama||''}</td>
-        <td>${h}</td>
+        <td><div class="bab-nama"><span class="bab-dot ${bc}"></span>${b.nama||''}</div></td>
+        <td>${bh}</td>
         <td>
-          <span class="mini-bar-wrap"><span class="mini-bar ${bc}" style="width:${bp}%"></span></span>
-          <span style="font-weight:600;color:var(--${bc==='good'?'good':bc==='warn'?'warn':'bad'})">${bp}%</span>
+          <div class="mini-pct">
+            <span class="mini-track"><span class="mini-fill ${bc}" style="width:${bp}%"></span></span>
+            <span class="mini-num ${bc}">${bp}%</span>
+          </div>
         </td>
       </tr>`;
     }).join('');
-    return `<div class="materi-card" id="mc-${row.id}">
-      <div class="materi-header" onclick="toggleBab('${row.id}')">
-        <div class="materi-nama">${row.nama||'(tanpa nama)'}</div>
-        <span class="pct-badge ${cls}">${pct}%</span>
-        <svg class="chevron${isOpen?' open':''}" id="chv-${row.id}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+
+    return `<div class="materi-card${isOpen?' open':''}" id="mc-${row.id}">
+      <div class="materi-header" onclick="toggle('${row.id}')">
+        <div class="materi-icon">${getIcon(i)}</div>
+        <div class="materi-info">
+          <div class="materi-nama">${row.nama||'(tanpa nama)'}</div>
+          <div class="materi-meta">${totalBab} bab · ${t.h} halaman</div>
+        </div>
+        <span class="pct-chip ${c}">${pct}%</span>
+        <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="prog-wrap"><div class="prog-bar ${cls}" style="width:${pct}%"></div></div>
-      <div class="bab-section${isOpen?' open':''}" id="bab-${row.id}">
+      <div class="prog-track"><div class="prog-fill ${c}" style="width:${pct}%"></div></div>
+      <div class="bab-section">
         <table class="bab-table">
-          <thead><tr><th>Bab</th><th>Halaman</th><th>Presentasi</th></tr></thead>
-          <tbody>${babs}</tbody>
+          <thead><tr><th>Bab</th><th>Hal.</th><th>Presentasi</th></tr></thead>
+          <tbody>${babRows}</tbody>
         </table>
       </div>
     </div>`;
   }).join('');
 }
 
-function toggleBab(id){
-  openState[id] = !openState[id];
-  const sec = document.getElementById('bab-'+id);
-  const chv = document.getElementById('chv-'+id);
-  if(sec) sec.className = 'bab-section'+(openState[id]?' open':'');
-  if(chv) chv.className = 'chevron'+(openState[id]?' open':'');
+function toggle(id){
+  openMap[id] = !openMap[id];
+  const el = document.getElementById('mc-'+id);
+  if(el) el.className = 'materi-card'+(openMap[id]?' open':'');
 }
 
-/* ---- Load dari Supabase ---- */
+/* ---- Load ---- */
 async function loadData(){
-  setStatus('Memuat data dari server…','loading');
+  setStatus('Memuat data…','loading');
   try{
-    const { data: rows, error } = await _sb.from('progres_materi').select('*').limit(1);
+    const {data:rows,error} = await _sb.from('progres_materi').select('*').limit(1);
     if(error) throw error;
     if(rows && rows.length>0){
       const row = rows[0];
-      lastUpdate = row.updated_at;
-      if(Array.isArray(row.data) && row.data.length>0){
-        appData = row.data;
-      }
-      // Coba ambil identitas (disimpan di kolom data sebagai field khusus jika ada)
+      lastUpd = row.updated_at;
+      if(Array.isArray(row.data) && row.data.length>0) appData = row.data;
+      if(row.identity) appIdent = row.identity;
     }
-    // Coba ambil identitas dari tabel identity jika ada
-    await loadIdentity();
     render();
-    setStatus('Data berhasil dimuat · '+fmtTime(lastUpdate),'ok');
-    document.getElementById('livePill').style.display='inline-flex';
+    setStatus('Live · '+fmtTime(lastUpd),'ok');
+    document.getElementById('liveDot').style.background='#34d399';
+    document.getElementById('eyebrowText').textContent='Data Langsung';
   } catch(e){
-    setStatus('Gagal memuat data. Periksa koneksi internet.','error');
+    setStatus('Gagal memuat data','error');
+    document.getElementById('liveDot').style.background='#ef4444';
+    document.getElementById('eyebrowText').textContent='Koneksi Gagal';
+    document.getElementById('materiList').innerHTML=`<div class="state-box">
+      <div class="state-icon">⚠️</div>
+      <div class="state-title">Gagal memuat data</div>
+      <div class="state-sub">Periksa koneksi internet lalu refresh halaman.</div>
+    </div>`;
     console.error(e);
   }
 }
 
-async function loadIdentity(){
-  try{
-    const { data: rows } = await _sb.from('progres_identity').select('*').limit(1);
-    if(rows && rows.length>0){
-      appIdent = { nama: rows[0].nama||'', kelas: rows[0].kelas||'' };
-    }
-  } catch(e){ /* tabel mungkin belum ada */ }
-}
-
-/* ---- Realtime subscribe ---- */
+/* ---- Realtime ---- */
 function subscribe(){
-  _sb.channel('viewer-sync')
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'progres_materi'}, payload=>{
-      const remote = payload.new?.data;
-      if(Array.isArray(remote)){
-        appData    = remote;
-        lastUpdate = payload.new?.updated_at || new Date().toISOString();
-        render();
-        setStatus('Diperbarui otomatis · '+fmtTime(lastUpdate),'ok');
-      }
+  _sb.channel('pondok-viewer')
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'progres_materi'},payload=>{
+      const n = payload.new;
+      if(Array.isArray(n?.data)) appData = n.data;
+      if(n?.identity) appIdent = n.identity;
+      if(n?.updated_at) lastUpd = n.updated_at;
+      render();
+      setStatus('Diperbarui · '+fmtTime(lastUpd),'ok');
     })
     .subscribe();
 }
@@ -352,108 +572,86 @@ function subscribe(){
 function exportHtml(){
   const nama  = appIdent.nama  || '-';
   const kelas = appIdent.kelas || '-';
-  const grandH   = appData.reduce((a,r)=>a+rowTotals(r).halaman,0);
-  const grandS   = appData.reduce((a,r)=>a+rowTotals(r).sisa,0);
-  const grandPct = calcPersen(grandH,grandS);
-  const selesai  = appData.filter(r=>{const t=rowTotals(r);return calcPersen(t.halaman,t.sisa)>=100;}).length;
+  const gH  = appData.reduce((a,r)=>a+rowTot(r).h,0);
+  const gS  = appData.reduce((a,r)=>a+rowTot(r).s,0);
+  const gPct= calcPct(gH,gS);
+  const done= appData.filter(r=>{const t=rowTot(r);return calcPct(t.h,t.s)>=100;}).length;
 
-  function pctStyle(pct){
-    if(pct>=80) return 'background:#e6f7ee;color:#19a463;';
-    if(pct>=40) return 'background:#fdf2e1;color:#d98c1c;';
-    return 'background:#fdebec;color:#e5484d;';
-  }
+  const chip=(pct)=>{
+    const c=cls(pct);
+    const bg=c==='good'?'#ecfdf6':c==='warn'?'#fffbeb':'#fef2f2';
+    const fg=c==='good'?'#0d9f6e':c==='warn'?'#c27b17':'#dc2626';
+    const bd=c==='good'?'#a7f0d6':c==='warn'?'#fde68a':'#fecaca';
+    return `<span style="background:${bg};color:${fg};border:1px solid ${bd};padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;">${pct}%</span>`;
+  };
 
-  const materiRows = appData.map(row=>{
-    const totals = rowTotals(row);
-    const pct    = calcPersen(totals.halaman, totals.sisa);
-    const babRows = (row.bab||[]).map(b=>{
-      const h  = Number(b.halaman)||0;
-      const s  = Math.min(Math.max(Number(b.sisa)||0,0),h);
-      const bp = calcPersen(h,s);
-      return `<tr style="background:#fff;">
-        <td style="padding:8px 12px;color:#6b7080;border-bottom:1px solid #eef0f6;">${b.nama||''}</td>
-        <td style="padding:8px 12px;text-align:center;border-bottom:1px solid #eef0f6;">${h}</td>
-        <td style="padding:8px 12px;text-align:center;border-bottom:1px solid #eef0f6;">
-          <span style="padding:3px 10px;border-radius:20px;font-weight:700;font-size:12px;${pctStyle(bp)}">${bp}%</span>
-        </td>
-      </tr>`;
+  const rows = appData.map((row,i)=>{
+    const t=rowTot(row); const pct=calcPct(t.h,t.s);
+    const babs=(row.bab||[]).map(b=>{
+      const bh=Number(b.halaman)||0;
+      const bs=Math.min(Math.max(Number(b.sisa)||0,0),bh);
+      const bp=calcPct(bh,bs);
+      return `<tr><td style="padding:8px 14px;color:#3d4259;font-size:13px;border-bottom:1px solid #f0f2f9;">${b.nama||''}</td>
+        <td style="padding:8px 14px;text-align:center;color:#7c829a;font-size:13px;border-bottom:1px solid #f0f2f9;">${bh}</td>
+        <td style="padding:8px 14px;text-align:right;border-bottom:1px solid #f0f2f9;">${chip(bp)}</td></tr>`;
     }).join('');
-    return `<tr style="background:#ebebff;">
-      <td colspan="3" style="padding:10px 12px;font-weight:700;color:#181b29;border-bottom:1px solid #e7e9f1;">
-        ${row.nama||''}
-        <span style="float:right;padding:3px 10px;border-radius:20px;font-weight:700;font-size:12px;${pctStyle(pct)}">${pct}%</span>
-      </td>
-    </tr>${babRows}`;
+    return `<tr style="background:#ede9fe;">
+      <td colspan="3" style="padding:11px 14px;font-weight:700;color:#1e1b4b;font-size:14px;">
+        ${getIcon(i)} ${row.nama||''} <span style="float:right">${chip(pct)}</span>
+      </td></tr>${babs}`;
   }).join('');
 
-  const html = `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
+  const html=`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Progres Materi Pondok</title>
-</head>
-<body style="margin:0;padding:32px 16px;background:#f6f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#181b29;">
-<div style="max-width:760px;margin:0 auto;">
-  <h1 style="font-size:22px;font-weight:800;margin-bottom:4px;">Progres Materi Pondok</h1>
-  <p style="color:#6b7080;margin-bottom:24px;font-size:13px;">Dicetak pada ${new Date().toLocaleDateString('id-ID',{dateStyle:'long'})} · ${new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</p>
-
-  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1.5px solid #e7e9f1;margin-bottom:20px;">
-    <tr><td style="padding:10px 16px;font-size:12px;font-weight:700;color:#9aa0b1;text-transform:uppercase;letter-spacing:.4px;width:80px;">Nama</td><td style="padding:10px 16px;font-weight:600;">${nama}</td>
-        <td style="padding:10px 16px;font-size:12px;font-weight:700;color:#9aa0b1;text-transform:uppercase;letter-spacing:.4px;width:80px;">Kelas</td><td style="padding:10px 16px;font-weight:600;">${kelas}</td></tr>
-  </table>
-
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-    <div style="background:#fff;border:1.5px solid #e7e9f1;border-radius:10px;padding:14px 16px;">
-      <div style="font-size:11px;font-weight:600;color:#9aa0b1;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Total Materi</div>
-      <div style="font-size:24px;font-weight:800;">${appData.length}</div>
-    </div>
-    <div style="background:#fff;border:1.5px solid #e7e9f1;border-radius:10px;padding:14px 16px;">
-      <div style="font-size:11px;font-weight:600;color:#9aa0b1;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Progres Keseluruhan</div>
-      <div style="font-size:24px;font-weight:800;${grandPct>=80?'color:#19a463':grandPct>=40?'color:#d98c1c':'color:#e5484d'}">${grandPct}%</div>
-    </div>
-    <div style="background:#fff;border:1.5px solid #e7e9f1;border-radius:10px;padding:14px 16px;">
-      <div style="font-size:11px;font-weight:600;color:#9aa0b1;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Materi Selesai</div>
-      <div style="font-size:24px;font-weight:800;color:#19a463;">${selesai}</div>
+<title>Materi Pondok — ${nama}</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head><body style="margin:0;padding:0;background:#f0f2f9;font-family:'Plus Jakarta Sans',sans-serif;">
+<div style="background:linear-gradient(135deg,#1e1b4b,#4338ca);padding:40px 24px 56px;">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px;">Materi Pondok</div>
+    <h1 style="color:#fff;font-size:28px;font-weight:800;margin-bottom:4px;">Progres Materi</h1>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:24px;">Dicetak ${new Date().toLocaleString('id-ID',{dateStyle:'long',timeStyle:'short'})}</p>
+    <div style="display:inline-flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 20px"><div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:2px;">Nama</div><div style="font-size:15px;font-weight:700;color:#fff;">${nama}</div></div>
+      <div style="padding:12px 20px;border-left:1px solid rgba(255,255,255,.15)"><div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:2px;">Kelas</div><div style="font-size:15px;font-weight:700;color:#fff;">${kelas}</div></div>
     </div>
   </div>
-
-  <table style="width:100%;border-collapse:collapse;border:1.5px solid #e7e9f1;border-radius:12px;overflow:hidden;">
-    <thead>
-      <tr style="background:#5b5bf0;">
-        <th style="padding:11px 12px;text-align:left;font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px;">Materi / Bab</th>
-        <th style="padding:11px 12px;text-align:center;font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px;width:90px;">Halaman</th>
-        <th style="padding:11px 12px;text-align:center;font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px;width:110px;">Presentasi</th>
-      </tr>
-    </thead>
-    <tbody>${materiRows}</tbody>
-    <tfoot>
-      <tr style="background:#f0fff8;">
-        <td style="padding:11px 12px;font-weight:800;color:#181b29;" colspan="2">Total Keseluruhan</td>
-        <td style="padding:11px 12px;text-align:center;">
-          <span style="padding:4px 12px;border-radius:20px;font-weight:800;font-size:13px;${pctStyle(grandPct)}">${grandPct}%</span>
-        </td>
-      </tr>
-    </tfoot>
-  </table>
 </div>
-</body>
-</html>`;
+<div style="max-width:760px;margin:-28px auto 0;padding:0 24px 60px;">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+    <div style="background:#fff;border:1.5px solid #e3e6f0;border-radius:14px;padding:16px 18px;border-bottom:3px solid #4f46e5;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#b0b5c8;margin-bottom:6px;">Total Materi</div>
+      <div style="font-size:26px;font-weight:800;color:#0f1117;">${appData.length}</div></div>
+    <div style="background:#fff;border:1.5px solid #e3e6f0;border-radius:14px;padding:16px 18px;border-bottom:3px solid ${gPct>=80?'#0d9f6e':gPct>=40?'#c27b17':'#dc2626'};">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#b0b5c8;margin-bottom:6px;">Progres Keseluruhan</div>
+      <div style="font-size:26px;font-weight:800;color:${gPct>=80?'#0d9f6e':gPct>=40?'#c27b17':'#dc2626'}">${gPct}%</div></div>
+    <div style="background:#fff;border:1.5px solid #e3e6f0;border-radius:14px;padding:16px 18px;border-bottom:3px solid #c8941a;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#b0b5c8;margin-bottom:6px;">Materi Selesai</div>
+      <div style="font-size:26px;font-weight:800;color:#c8941a;">${done}</div></div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border:1.5px solid #e3e6f0;border-radius:14px;overflow:hidden;">
+    <thead><tr style="background:#4f46e5;">
+      <th style="padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Materi / Bab</th>
+      <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;width:80px;">Hal.</th>
+      <th style="padding:11px 14px;text-align:right;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;width:110px;">Presentasi</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr style="background:#ecfdf6;">
+      <td colspan="2" style="padding:12px 14px;font-weight:800;color:#0f1117;font-size:14px;">Total Keseluruhan</td>
+      <td style="padding:12px 14px;text-align:right;">${chip(gPct)}</td>
+    </tr></tfoot>
+  </table>
+</div></body></html>`;
 
-  const blob = new Blob([html], {type:'text/html'});
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  const stamp = new Date().toISOString().slice(0,10);
-  a.download = `materi-pondok-${stamp}.html`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=`materi-pondok-${new Date().toISOString().slice(0,10)}.html`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
 /* ---- Init ---- */
-(async()=>{
-  await loadData();
-  subscribe();
-})();
+(async()=>{ await loadData(); subscribe(); })();
 </script>
 </body>
 </html>
