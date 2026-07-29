@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --ink:#0f1117;--ink-2:#3d4259;--ink-3:#7c829a;--ink-4:#b0b5c8;
@@ -144,6 +145,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 
 /* STATUS PILL */
 .status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 13px;border-radius:99px;position:fixed;bottom:24px;right:24px;z-index:100;box-shadow:var(--shadow-md);transition:all .3s;font-family:var(--font);}
+.btn-excel-fixed{position:fixed;bottom:24px;left:24px;z-index:100;display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);background:#16a34a;color:#fff;box-shadow:var(--shadow-md);transition:all .15s;}
+.btn-excel-fixed:hover{background:#15803d;transform:translateY(-1px);box-shadow:0 12px 36px rgba(22,163,74,.25);}
+.btn-excel-fixed:active{transform:scale(.96);}
+.btn-excel-fixed svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .status-pill.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
 .status-pill.loading{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
 .status-pill.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
@@ -225,6 +230,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
     </div>
   </div>
 </div>
+
+<button class="btn-excel-fixed" onclick="exportXlsx()">
+  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  Ekspor Excel
+</button>
 
 <div class="status-pill loading" id="statusPill">
   <span class="sdot"></span>
@@ -485,6 +495,133 @@ function exportHtml(){
   a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
   a.download=`materi-pondok-${new Date().toISOString().slice(0,10)}.html`;
   a.click();URL.revokeObjectURL(a.href);
+}
+
+function exportXlsx(){
+  if(typeof XLSX === 'undefined'){ alert('Library Excel belum termuat, coba refresh.'); return; }
+
+  const nama  = appIdent.nama  || '-';
+  const kelas = appIdent.kelas || '-';
+  const wb = XLSX.utils.book_new();
+
+  const COLOR_HEADER = '4F46E5';
+  const COLOR_MATERI = 'EDE9FE';
+  const COLOR_TOTAL  = 'ECFDF6';
+  const COLOR_GOLD   = 'FEF9EC';
+  const GOOD = '0D9F6E'; const WARN = 'C27B17'; const BAD = 'DC2626';
+  const WHITE = 'FFFFFF'; const INK = '0F1117'; const SOFT = '7C829A';
+
+  function pctColor(pct){ return pct>=80?GOOD:pct>=40?WARN:BAD; }
+
+  function cs(bold, bg, fg, align, numFmt){
+    return {
+      font:{ bold:!!bold, color:{rgb:fg||INK}, sz:11 },
+      fill:{ type:'pattern', patternType:'solid', fgColor:{rgb:bg||WHITE} },
+      alignment:{ horizontal:align||'left', vertical:'center' },
+      border:{
+        top:{style:'thin',color:{rgb:'E3E6F0'}},
+        bottom:{style:'thin',color:{rgb:'E3E6F0'}},
+        left:{style:'thin',color:{rgb:'E3E6F0'}},
+        right:{style:'thin',color:{rgb:'E3E6F0'}}
+      },
+      numFmt: numFmt||'@'
+    };
+  }
+
+  const wsData = [];
+
+  // Identitas
+  wsData.push([
+    {v:'Nama :',  s:cs(true,  'F7F8FC', SOFT, 'left')},
+    {v:nama,      s:cs(false, WHITE,    INK,  'left')},
+    {v:'Kelas :', s:cs(true,  'F7F8FC', SOFT, 'left')},
+    {v:kelas,     s:cs(false, WHITE,    INK,  'left')},
+    {v:'',s:cs(false,WHITE)},{v:'',s:cs(false,WHITE)}
+  ]);
+  wsData.push(Array(6).fill({v:'',s:cs(false,WHITE)}));
+
+  // Header
+  wsData.push([
+    {v:'Materi / Bab',    s:cs(true,COLOR_HEADER,WHITE,'left')},
+    {v:'Semua Halaman',   s:cs(true,COLOR_HEADER,WHITE,'center')},
+    {v:'Sudah Terisi',    s:cs(true,COLOR_HEADER,WHITE,'center')},
+    {v:'Belum Terisi',    s:cs(true,COLOR_HEADER,WHITE,'center')},
+    {v:'Presentasi (%)',  s:cs(true,COLOR_HEADER,WHITE,'center')},
+    {v:'',                s:cs(true,COLOR_HEADER,WHITE,'center')}
+  ]);
+
+  // Data
+  appData.forEach(row=>{
+    const t = rowTot(row);
+    const pct = calcPct(t.h, t.s);
+    const terisi = t.h - t.s;
+
+    // Baris materi
+    wsData.push([
+      {v:row.nama||'', s:cs(true, COLOR_MATERI, INK,   'left')},
+      {v:t.h,          s:cs(true, COLOR_MATERI, INK,   'center')},
+      {v:terisi,       s:cs(true, COLOR_MATERI, GOOD,  'center')},
+      {v:t.s,          s:cs(true, COLOR_MATERI, t.s>0?BAD:GOOD, 'center')},
+      {v:pct+'%',      s:cs(true, COLOR_MATERI, pctColor(pct), 'center')},
+      {v:'',           s:cs(false,COLOR_MATERI, INK,   'left')}
+    ]);
+
+    // Bab
+    (row.bab||[]).forEach(b=>{
+      const bh = Number(b.halaman)||0;
+      const bs = Math.min(Math.max(Number(b.sisa)||0,0),bh);
+      const bt = bh-bs;
+      const bp = calcPct(bh,bs);
+      wsData.push([
+        {v:'  '+(b.nama||''), s:cs(false, WHITE, SOFT, 'left')},
+        {v:bh,   s:cs(false, WHITE, INK,  'center')},
+        {v:bt,   s:cs(false, WHITE, GOOD, 'center')},
+        {v:bs,   s:cs(false, WHITE, bs>0?BAD:GOOD, 'center')},
+        {v:bp+'%', s:cs(false, WHITE, pctColor(bp), 'center')},
+        {v:'',   s:cs(false, WHITE)}
+      ]);
+    });
+
+    // Subtotal per materi (kuning emas)
+    wsData.push([
+      {v:'',                       s:cs(false,'FFD700',INK,  'left')},
+      {v:'↳ Total '+( row.nama||''), s:cs(true, 'FFD700','7A5800','left')},
+      {v:'',s:cs(false,'FFD700')},
+      {v:'',s:cs(false,'FFD700')},
+      {v:pct+'%', s:cs(true,'FFD700',pctColor(pct),'center')},
+      {v:'',s:cs(false,'FFD700')}
+    ]);
+  });
+
+  // Grand total
+  const gT  = appData.reduce((a,r)=>{const t=rowTot(r);return{h:a.h+t.h,s:a.s+t.s};},{h:0,s:0});
+  const gPct = calcPct(gT.h, gT.s);
+  const gTerisi = gT.h - gT.s;
+  wsData.push([
+    {v:'Total Keseluruhan', s:cs(true,COLOR_TOTAL,INK,  'left')},
+    {v:gT.h,               s:cs(true,COLOR_TOTAL,INK,  'center')},
+    {v:gTerisi,            s:cs(true,COLOR_TOTAL,GOOD, 'center')},
+    {v:gT.s,               s:cs(true,COLOR_TOTAL,gT.s>0?BAD:GOOD,'center')},
+    {v:gPct+'%',           s:cs(true,COLOR_TOTAL,pctColor(gPct),'center')},
+    {v:'',                 s:cs(false,COLOR_TOTAL)}
+  ]);
+
+  // Build sheet
+  const ws = XLSX.utils.aoa_to_sheet(wsData.map(r=>r.map(c=>c.v)));
+  const alpha=['A','B','C','D','E','F'];
+  wsData.forEach((row,ri)=>{
+    row.forEach((cell,ci)=>{
+      const ref=alpha[ci]+(ri+1);
+      if(!ws[ref]) ws[ref]={v:cell.v};
+      ws[ref].s=cell.s;
+    });
+  });
+  ws['!cols']=[{wch:34},{wch:15},{wch:14},{wch:14},{wch:14},{wch:4}];
+  ws['!freeze']={xSplit:0,ySplit:3,topLeftCell:'A4',activeCell:'A4'};
+  XLSX.utils.book_append_sheet(wb,'Progres Materi',ws);
+
+  const stamp = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`materi-pondok-${stamp}.xlsx`,{bookType:'xlsx',cellStyles:true});
 }
 
 (async()=>{ await loadData(); subscribe(); })();
