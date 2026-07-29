@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --ink:#0f1117;--ink-2:#3d4259;--ink-3:#7c829a;--ink-4:#b0b5c8;
@@ -498,7 +497,9 @@ function exportHtml(){
 }
 
 function exportXlsx(){
-  if(typeof XLSX === 'undefined'){ alert('Library Excel belum termuat, coba refresh.'); return; }
+  try{
+  if(typeof XLSX === 'undefined'){ alert('Library Excel belum termuat, coba refresh halaman.'); return; }
+  if(!appData || appData.length===0){ alert('Belum ada data untuk diekspor.'); return; }
 
   const nama  = appIdent.nama  || '-';
   const kelas = appIdent.kelas || '-';
@@ -621,10 +622,15 @@ function exportXlsx(){
   XLSX.utils.book_append_sheet(wb,'Progres Materi',ws);
 
   const stamp = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb,`materi-pondok-${stamp}.xlsx`,{bookType:'xlsx',cellStyles:true});
+  XLSX.writeFile(wb, 'materi-pondok-'+stamp+'.xlsx', {bookType:'xlsx', cellStyles:true});
+  } catch(e){
+    console.error('Export Excel error:', e);
+    alert('Gagal ekspor: ' + e.message);
+  }
 }
 
 (async()=>{ await loadData(); subscribe(); })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>
