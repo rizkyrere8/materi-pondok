@@ -498,134 +498,132 @@ function exportHtml(){
 
 function exportXlsx(){
   try{
-  if(typeof XLSX === 'undefined'){ alert('Library Excel belum termuat, coba refresh halaman.'); return; }
-  if(!appData || appData.length===0){ alert('Belum ada data untuk diekspor.'); return; }
+    if(typeof XLSX === 'undefined'){ alert('Library Excel belum termuat, coba refresh halaman.'); return; }
+    if(!appData || appData.length===0){ alert('Belum ada data untuk diekspor.'); return; }
 
-  const nama  = appIdent.nama  || '-';
-  const kelas = appIdent.kelas || '-';
-  const wb = XLSX.utils.book_new();
+    const nama  = appIdent.nama  || '-';
+    const kelas = appIdent.kelas || '-';
 
-  const COLOR_HEADER = '4F46E5';
-  const COLOR_MATERI = 'EDE9FE';
-  const COLOR_TOTAL  = 'ECFDF6';
-  const COLOR_GOLD   = 'FEF9EC';
-  const GOOD = '0D9F6E'; const WARN = 'C27B17'; const BAD = 'DC2626';
-  const WHITE = 'FFFFFF'; const INK = '0F1117'; const SOFT = '7C829A';
+    // Bangun data sebagai array of arrays (string semua, hindari bug indexOf)
+    const rows = [];
 
-  function pctColor(pct){ return pct>=80?GOOD:pct>=40?WARN:BAD; }
+    // Baris identitas
+    rows.push(['Nama :', nama, 'Kelas :', kelas, '', '']);
+    rows.push(['', '', '', '', '', '']);
 
-  function cs(bold, bg, fg, align, numFmt){
-    return {
-      font:{ bold:!!bold, color:{rgb:fg||INK}, sz:11 },
-      fill:{ type:'pattern', patternType:'solid', fgColor:{rgb:bg||WHITE} },
-      alignment:{ horizontal:align||'left', vertical:'center' },
-      border:{
-        top:{style:'thin',color:{rgb:'E3E6F0'}},
-        bottom:{style:'thin',color:{rgb:'E3E6F0'}},
-        left:{style:'thin',color:{rgb:'E3E6F0'}},
-        right:{style:'thin',color:{rgb:'E3E6F0'}}
-      },
-      numFmt: numFmt||'@'
-    };
-  }
+    // Header
+    rows.push(['Materi / Bab', 'Semua Halaman', 'Sudah Terisi', 'Belum Terisi', 'Presentasi (%)', '']);
 
-  const wsData = [];
+    // Data materi & bab
+    appData.forEach(row => {
+      const t = rowTot(row);
+      const pct = calcPct(t.h, t.s);
+      const terisi = t.h - t.s;
 
-  // Identitas
-  wsData.push([
-    {v:'Nama :',  s:cs(true,  'F7F8FC', SOFT, 'left')},
-    {v:nama,      s:cs(false, WHITE,    INK,  'left')},
-    {v:'Kelas :', s:cs(true,  'F7F8FC', SOFT, 'left')},
-    {v:kelas,     s:cs(false, WHITE,    INK,  'left')},
-    {v:'',s:cs(false,WHITE)},{v:'',s:cs(false,WHITE)}
-  ]);
-  wsData.push(Array(6).fill({v:'',s:cs(false,WHITE)}));
+      // Baris materi
+      rows.push([String(row.nama||''), String(t.h), String(terisi), String(t.s), pct+'%', '']);
 
-  // Header
-  wsData.push([
-    {v:'Materi / Bab',    s:cs(true,COLOR_HEADER,WHITE,'left')},
-    {v:'Semua Halaman',   s:cs(true,COLOR_HEADER,WHITE,'center')},
-    {v:'Sudah Terisi',    s:cs(true,COLOR_HEADER,WHITE,'center')},
-    {v:'Belum Terisi',    s:cs(true,COLOR_HEADER,WHITE,'center')},
-    {v:'Presentasi (%)',  s:cs(true,COLOR_HEADER,WHITE,'center')},
-    {v:'',                s:cs(true,COLOR_HEADER,WHITE,'center')}
-  ]);
+      // Baris bab
+      (row.bab||[]).forEach(b => {
+        const bh = Number(b.halaman)||0;
+        const bs = Math.min(Math.max(Number(b.sisa)||0,0),bh);
+        const bt = bh - bs;
+        const bp = calcPct(bh, bs);
+        rows.push(['  '+String(b.nama||''), String(bh), String(bt), String(bs), bp+'%', '']);
+      });
 
-  // Data
-  appData.forEach(row=>{
-    const t = rowTot(row);
-    const pct = calcPct(t.h, t.s);
-    const terisi = t.h - t.s;
-
-    // Baris materi
-    wsData.push([
-      {v:row.nama||'', s:cs(true, COLOR_MATERI, INK,   'left')},
-      {v:t.h,          s:cs(true, COLOR_MATERI, INK,   'center')},
-      {v:terisi,       s:cs(true, COLOR_MATERI, GOOD,  'center')},
-      {v:t.s,          s:cs(true, COLOR_MATERI, t.s>0?BAD:GOOD, 'center')},
-      {v:pct+'%',      s:cs(true, COLOR_MATERI, pctColor(pct), 'center')},
-      {v:'',           s:cs(false,COLOR_MATERI, INK,   'left')}
-    ]);
-
-    // Bab
-    (row.bab||[]).forEach(b=>{
-      const bh = Number(b.halaman)||0;
-      const bs = Math.min(Math.max(Number(b.sisa)||0,0),bh);
-      const bt = bh-bs;
-      const bp = calcPct(bh,bs);
-      wsData.push([
-        {v:'  '+(b.nama||''), s:cs(false, WHITE, SOFT, 'left')},
-        {v:bh,   s:cs(false, WHITE, INK,  'center')},
-        {v:bt,   s:cs(false, WHITE, GOOD, 'center')},
-        {v:bs,   s:cs(false, WHITE, bs>0?BAD:GOOD, 'center')},
-        {v:bp+'%', s:cs(false, WHITE, pctColor(bp), 'center')},
-        {v:'',   s:cs(false, WHITE)}
-      ]);
+      // Subtotal
+      rows.push(['', '↳ Total '+String(row.nama||''), '', '', pct+'%', '']);
     });
 
-    // Subtotal per materi (kuning emas)
-    wsData.push([
-      {v:'',                       s:cs(false,'FFD700',INK,  'left')},
-      {v:'↳ Total '+( row.nama||''), s:cs(true, 'FFD700','7A5800','left')},
-      {v:'',s:cs(false,'FFD700')},
-      {v:'',s:cs(false,'FFD700')},
-      {v:pct+'%', s:cs(true,'FFD700',pctColor(pct),'center')},
-      {v:'',s:cs(false,'FFD700')}
-    ]);
-  });
+    // Grand total
+    const gT   = appData.reduce((a,r)=>{ const t=rowTot(r); return {h:a.h+t.h,s:a.s+t.s}; },{h:0,s:0});
+    const gPct = calcPct(gT.h, gT.s);
+    rows.push(['Total Keseluruhan', String(gT.h), String(gT.h-gT.s), String(gT.s), gPct+'%', '']);
 
-  // Grand total
-  const gT  = appData.reduce((a,r)=>{const t=rowTot(r);return{h:a.h+t.h,s:a.s+t.s};},{h:0,s:0});
-  const gPct = calcPct(gT.h, gT.s);
-  const gTerisi = gT.h - gT.s;
-  wsData.push([
-    {v:'Total Keseluruhan', s:cs(true,COLOR_TOTAL,INK,  'left')},
-    {v:gT.h,               s:cs(true,COLOR_TOTAL,INK,  'center')},
-    {v:gTerisi,            s:cs(true,COLOR_TOTAL,GOOD, 'center')},
-    {v:gT.s,               s:cs(true,COLOR_TOTAL,gT.s>0?BAD:GOOD,'center')},
-    {v:gPct+'%',           s:cs(true,COLOR_TOTAL,pctColor(gPct),'center')},
-    {v:'',                 s:cs(false,COLOR_TOTAL)}
-  ]);
+    // Buat worksheet dari plain array
+    const ws = XLSX.utils.aoa_to_sheet(rows);
 
-  // Build sheet
-  const ws = XLSX.utils.aoa_to_sheet(wsData.map(r=>r.map(c=>c.v)));
-  const alpha=['A','B','C','D','E','F'];
-  wsData.forEach((row,ri)=>{
-    row.forEach((cell,ci)=>{
-      const ref=alpha[ci]+(ri+1);
-      if(!ws[ref]) ws[ref]={v:cell.v};
-      ws[ref].s=cell.s;
+    // Terapkan style manual per cell
+    const C_HEADER = '4F46E5'; const C_MATERI = 'EDE9FE'; const C_TOTAL = 'ECFDF6';
+    const C_GOLD = 'FFD700';   const C_WHITE  = 'FFFFFF'; const C_LABEL = 'F7F8FC';
+    const GOOD='0D9F6E'; const WARN='C27B17'; const BAD='DC2626';
+    const INK='0F1117';  const SOFT='7C829A'; const GOLD_TXT='7A5800';
+
+    function pctC(pct){ return pct>=80?GOOD:pct>=40?WARN:BAD; }
+
+    function st(bold, bg, fg, align){
+      return {
+        font:{ bold:!!bold, color:{rgb:fg||INK}, sz:11 },
+        fill:{ type:'pattern', patternType:'solid', fgColor:{rgb:bg||C_WHITE} },
+        alignment:{ horizontal:align||'left', vertical:'center' },
+        border:{
+          top:{style:'thin',color:{rgb:'E3E6F0'}},
+          bottom:{style:'thin',color:{rgb:'E3E6F0'}},
+          left:{style:'thin',color:{rgb:'E3E6F0'}},
+          right:{style:'thin',color:{rgb:'E3E6F0'}}
+        }
+      };
+    }
+
+    const alpha = ['A','B','C','D','E','F'];
+
+    rows.forEach((row, ri) => {
+      const rowLabel = rows[ri][0];
+      const isHeader = ri === 2;
+      const isIdent  = ri === 0;
+      const isBlank  = ri === 1;
+      const isTotal  = rowLabel === 'Total Keseluruhan';
+      const isSubtot = rowLabel === '' && row[1].startsWith('↳');
+      const isMateri = !isHeader && !isIdent && !isBlank && !isTotal && !isSubtot && row[1] !== '' && !String(row[0]).startsWith('  ');
+      const isBab    = String(row[0]).startsWith('  ');
+
+      row.forEach((val, ci) => {
+        const ref = alpha[ci] + (ri + 1);
+        if (!ws[ref]) ws[ref] = {};
+        ws[ref].v = val;
+        ws[ref].t = 's';
+
+        if(isHeader){
+          ws[ref].s = st(true, C_HEADER, 'FFFFFF', 'center');
+          if(ci===0) ws[ref].s = st(true, C_HEADER, 'FFFFFF', 'left');
+        } else if(isIdent){
+          ws[ref].s = (ci===0||ci===2) ? st(true,C_LABEL,SOFT,'left') : st(false,C_WHITE,INK,'left');
+        } else if(isBlank){
+          ws[ref].s = st(false,C_WHITE,INK,'left');
+        } else if(isTotal){
+          const pct = parseInt(row[4])||0;
+          ws[ref].s = st(true, C_TOTAL, ci===4?pctC(pct):INK, ci===0?'left':'center');
+        } else if(isSubtot){
+          const pct = parseInt(row[4])||0;
+          ws[ref].s = st(true, C_GOLD, ci===1?GOLD_TXT:ci===4?pctC(pct):INK, ci===1?'left':'center');
+        } else if(isMateri){
+          const pct = parseInt(row[4])||0;
+          const sisa = parseInt(row[3])||0;
+          ws[ref].s = st(true, C_MATERI,
+            ci===2?GOOD : ci===3?(sisa>0?BAD:GOOD) : ci===4?pctC(pct):INK,
+            ci===0?'left':'center');
+        } else if(isBab){
+          const pct = parseInt(row[4])||0;
+          const sisa = parseInt(row[3])||0;
+          ws[ref].s = st(false, C_WHITE,
+            ci===0?SOFT : ci===2?GOOD : ci===3?(sisa>0?BAD:GOOD) : ci===4?pctC(pct):INK,
+            ci===0?'left':'center');
+        }
+      });
     });
-  });
-  ws['!cols']=[{wch:34},{wch:15},{wch:14},{wch:14},{wch:14},{wch:4}];
-  ws['!freeze']={xSplit:0,ySplit:3,topLeftCell:'A4',activeCell:'A4'};
-  XLSX.utils.book_append_sheet(wb,'Progres Materi',ws);
 
-  const stamp = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, 'materi-pondok-'+stamp+'.xlsx', {bookType:'xlsx', cellStyles:true});
+    ws['!cols'] = [{wch:34},{wch:15},{wch:14},{wch:14},{wch:14},{wch:2}];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Progres Materi');
+
+    const stamp = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, 'materi-pondok-'+stamp+'.xlsx', {bookType:'xlsx', cellStyles:true});
+
   } catch(e){
     console.error('Export Excel error:', e);
-    alert('Gagal ekspor: ' + e.message);
+    alert('Gagal ekspor: '+e.message);
   }
 }
 
