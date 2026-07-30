@@ -265,7 +265,11 @@ const fmtTime = iso => {
   return new Date(iso).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
 };
 const ICONS = ['📖','✏️','🔬','🌍','🕌','📐','🎨','🏛️','💡','📚'];
-const getIcon = i => ICONS[i % ICONS.length];
+function getIcon(i, nama){
+  const n = (nama||'').toLowerCase();
+  if(n.includes("qur'an") || n.includes("quran") || n.includes("al-qur") || n.includes("alqur")) return '📖';
+  return ICONS[i % ICONS.length];
+}
 
 function setStatus(msg,state='ok'){
   const p=document.getElementById('statusPill');
@@ -341,7 +345,7 @@ function render(){
 
     return `<div class="materi-card${isOpen?' open':''}" id="mc-${row.id}">
       <div class="materi-header" onclick="toggle('${row.id}')">
-        <div class="materi-icon">${getIcon(i)}</div>
+        <div class="materi-icon">${getIcon(i, row.nama)}</div>
         <div class="materi-info">
           <div class="materi-nama">${row.nama||'(tanpa nama)'}</div>
           <div class="materi-meta">${totalBab} bab · ${terisiTotal}/${t.h} hal terisi</div>
@@ -448,7 +452,7 @@ function exportHtml(){
     }).join('');
     return `<tr style="background:#ede9fe;">
       <td colspan="5" style="padding:11px 12px;font-weight:700;color:#1e1b4b;font-size:14px;">
-        ${getIcon(i)} ${row.nama||''} <span style="float:right">${chip(pct)}</span>
+        ${getIcon(i, row.nama)} ${row.nama||''} <span style="float:right">${chip(pct)}</span>
       </td></tr>${babRows}`;
   }).join('');
 
