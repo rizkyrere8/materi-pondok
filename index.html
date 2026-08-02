@@ -146,13 +146,14 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* STATUS PILL */
-.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 13px;border-radius:99px;position:fixed;bottom:24px;right:24px;z-index:100;box-shadow:var(--shadow-md);transition:all .3s;font-family:var(--font);}
-.btn-excel-fixed{position:fixed;bottom:24px;left:24px;z-index:100;display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);background:#16a34a;color:#fff;box-shadow:var(--shadow-md);transition:all .15s;}
-.btn-excel-fixed:hover{background:#15803d;transform:translateY(-1px);box-shadow:0 12px 36px rgba(22,163,74,.25);}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 13px;border-radius:99px;position:fixed;bottom:24px;right:16px;z-index:100;box-shadow:var(--shadow-md);transition:all .3s;font-family:var(--font);}
+.fixed-actions{position:fixed;bottom:20px;left:16px;z-index:100;display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+.btn-excel-fixed{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);background:#16a34a;color:#fff;box-shadow:var(--shadow-md);transition:all .15s;}
+.btn-excel-fixed:hover{background:#15803d;}
 .btn-excel-fixed:active{transform:scale(.96);}
 .btn-excel-fixed svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.btn-raport-fixed{position:fixed;bottom:72px;left:24px;z-index:100;display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);background:#7c3aed;color:#fff;box-shadow:var(--shadow-md);transition:all .15s;}
-.btn-raport-fixed:hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 12px 36px rgba(124,58,237,.25);}
+.btn-raport-fixed{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);background:#7c3aed;color:#fff;box-shadow:var(--shadow-md);transition:all .15s;}
+.btn-raport-fixed:hover{background:#6d28d9;}
 .btn-raport-fixed:active{transform:scale(.96);}
 .btn-raport-fixed svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .status-pill.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
@@ -237,14 +238,16 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
   </div>
 </div>
 
-<button class="btn-raport-fixed" onclick="exportRaport()">
-  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-  Isi Raport
-</button>
-<button class="btn-excel-fixed" onclick="exportXlsx()">
-  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-  Ekspor Excel
-</button>
+<div class="fixed-actions">
+  <button class="btn-raport-fixed" onclick="exportRaport()">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Isi Raport
+  </button>
+  <button class="btn-excel-fixed" onclick="exportXlsx()">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Ekspor Excel
+  </button>
+</div>
 
 <div class="status-pill loading" id="statusPill">
   <span class="sdot"></span>
