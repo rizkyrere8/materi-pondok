@@ -533,15 +533,22 @@ function formatKeterangan(pct){
 
 function normalizeName(s){
   return (s||'').toLowerCase()
-    .replace(/[''']/g,"'")
+    .replace(/['''`]/g,"'")
+    .replace(/[.-]/g,' ')   // "juz 18-30" -> "juz 18 30"
     .replace(/\s+/g,' ')
     .trim();
 }
 
 function buildBabMap(){
-  // Buat map: nama_bab_normalized -> pct
   const map = {};
   appData.forEach(row => {
+    // Map nama materi (level atas) — pakai total presentasi materi
+    const t = rowTot(row);
+    const mPct = calcPct(t.h, t.s);
+    const mKey = normalizeName(row.nama);
+    map[mKey] = mPct;
+
+    // Map tiap bab
     (row.bab||[]).forEach(b => {
       const bh = Number(b.halaman)||0;
       const bs = Math.min(Math.max(Number(b.sisa)||0,0),bh);
@@ -549,36 +556,46 @@ function buildBabMap(){
       const key = normalizeName(b.nama);
       map[key] = pct;
     });
-    // Juga map nama materi itu sendiri (untuk materi tanpa bab)
-    const t = rowTot(row);
-    const pct = calcPct(t.h, t.s);
-    const key = normalizeName(row.nama);
-    if(!(key in map)) map[key] = pct;
   });
   return map;
 }
 
 function findPct(raportNama, babMap){
-  // Coba cocokkan nama raport ke bab/materi
-  // Raport nama: "Makna Al-Quran Juz 1-17" -> cari bab yang cocok
-  const rNorm = normalizeName(raportNama);
-  
-  // Coba exact match dulu
+  // Hilangkan kata awalan yang tidak relevan: "makna", "k.", "k ", "materi"
+  function stripPrefix(s){
+    return s.replace(/^(makna\s+)?(k\.?\s*)?(materi\s+)?/,'').trim();
+  }
+
+  const rNorm  = normalizeName(raportNama);
+  const rStrip = stripPrefix(rNorm);
+
+  // 1. Exact match full
   if(rNorm in babMap) return babMap[rNorm];
-  
-  // Coba partial: cari bab yang namanya ada di nama raport atau sebaliknya
-  let bestKey = null, bestScore = 0;
+
+  // 2. Exact match setelah strip prefix
   for(const key of Object.keys(babMap)){
-    // Hitung kata yang cocok
-    const rWords = rNorm.split(' ').filter(w=>w.length>2);
-    const kWords = key.split(' ').filter(w=>w.length>2);
+    if(stripPrefix(key) === rStrip) return babMap[key];
+  }
+
+  // 3. Partial word matching (lebih longgar)
+  const stopWords = new Set(['dan','the','juz','al','ke','di','yang','ini']);
+  function getWords(s){ return s.split(' ').filter(w=>w.length>1 && !stopWords.has(w)); }
+
+  let bestKey = null, bestScore = 0;
+  const rWords = getWords(rStrip);
+
+  for(const key of Object.keys(babMap)){
+    const kWords = getWords(stripPrefix(key));
     let matches = 0;
-    for(const w of rWords){ if(kWords.some(kw=>kw.includes(w)||w.includes(kw))) matches++; }
+    for(const w of rWords){
+      if(kWords.some(kw => kw.includes(w) || w.includes(kw))) matches++;
+    }
+    if(matches === 0) continue;
     const score = matches / Math.max(rWords.length, kWords.length);
-    if(score > bestScore && score >= 0.5){ bestScore=score; bestKey=key; }
+    if(score > bestScore && score >= 0.4){ bestScore=score; bestKey=key; }
   }
   if(bestKey !== null) return babMap[bestKey];
-  return null; // tidak ditemukan
+  return null;
 }
 
 async function exportRaport(){
@@ -595,9 +612,21 @@ async function exportRaport(){
     const nama  = appIdent.nama  || '';
     const kelas = appIdent.kelas || '';
 
-    // Cari cell Nama dan Kelas (kolom B, baris 2-3)
-    if(ws['B2']) ws['B2'].v = nama;  else ws['B2'] = {t:'s', v:nama};
-    if(ws['B3']) ws['B3'].v = kelas; else ws['B3'] = {t:'s', v:kelas};
+    // Cari baris yang mengandung "Nama" dan "Kelas" lalu isi kolom B-nya
+    const refRange = XLSX.utils.decode_range(ws['!ref']||'A1:E40');
+    for(let r = refRange.s.r; r <= refRange.e.r; r++){
+      const cellA = ws[XLSX.utils.encode_cell({r, c:0})];
+      if(!cellA || typeof cellA.v !== 'string') continue;
+      const val = cellA.v.toLowerCase();
+      if(val.includes('nama')){
+        const refB = XLSX.utils.encode_cell({r, c:1});
+        ws[refB] = {t:'s', v: nama};
+      }
+      if(val.includes('kelas')){
+        const refB = XLSX.utils.encode_cell({r, c:1});
+        ws[refB] = {t:'s', v: kelas};
+      }
+    }
 
     // Buat map presentasi dari data
     const babMap = buildBabMap();
