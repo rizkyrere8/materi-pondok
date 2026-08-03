@@ -612,10 +612,14 @@ async function exportRaport(){
     const nama  = appIdent.nama  || '';
     const kelas = appIdent.kelas || '';
 
-    // Tulis langsung ke A2 dan A3 — gabungkan label + nilai dalam satu cell
-    // karena kolom B kosong di template dan tidak bisa di-create dengan cellStyles
-    ws['A2'] = { t:'s', v: 'Nama : ' + nama };
-    ws['A3'] = { t:'s', v: 'Kelas : ' + kelas };
+    // Tulis nama & kelas — update .v jika cell sudah ada, buat baru jika tidak
+    if(ws['A2']) ws['A2'].v = 'Nama : ' + nama;
+    else ws['A2'] = { t:'s', v: 'Nama : ' + nama };
+    if(ws['A3']) ws['A3'].v = 'Kelas : ' + kelas;
+    else ws['A3'] = { t:'s', v: 'Kelas : ' + kelas };
+    // Pastikan tipe cell string
+    if(ws['A2']) ws['A2'].t = 's';
+    if(ws['A3']) ws['A3'].t = 's';
 
     // Buat map presentasi dari data
     const babMap = buildBabMap();
