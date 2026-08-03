@@ -249,6 +249,32 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
   </button>
 </div>
 
+<!-- Tombol About -->
+<button class="btn-about" onclick="openAbout()" title="Tentang aplikasi ini">✨</button>
+
+<!-- Modal About -->
+<div class="about-overlay" id="aboutOverlay" onclick="if(event.target===this)closeAbout()">
+  <div class="about-card">
+    <button class="about-close" onclick="closeAbout()">✕</button>
+    <div class="about-avatar">🤖</div>
+    <div class="about-name">Claude</div>
+    <div class="about-role">AI Assistant by Anthropic</div>
+    <div class="about-divider"></div>
+    <div class="about-desc">
+      Halo! Saya <strong>Claude</strong> — AI yang membantu membangun aplikasi 
+      <em>Progres Materi Pondok</em> ini dari awal. Mulai dari desain, database 
+      Supabase, ekspor Excel, hingga fitur Isi Raport otomatis. 🎉
+    </div>
+    <div class="about-badge-row">
+      <span class="about-badge">🗄️ Supabase Database</span>
+      <span class="about-badge">⚡ Realtime Sync</span>
+      <span class="about-badge">📊 Export Excel</span>
+      <span class="about-badge">📄 Auto Raport</span>
+    </div>
+    <div class="about-footer">Dibuat dengan ❤️ oleh <span>Claude (Anthropic)</span> · 2026</div>
+  </div>
+</div>
+
 <div class="status-pill loading" id="statusPill">
   <span class="sdot"></span>
   <span id="statusTxt">Memuat…</span>
@@ -785,6 +811,15 @@ function exportXlsx(){
     alert('Gagal ekspor: '+e.message);
   }
 }
+
+function openAbout(){
+  document.getElementById('aboutOverlay').classList.add('open');
+}
+function closeAbout(){
+  document.getElementById('aboutOverlay').classList.remove('open');
+}
+// Tutup modal dengan tombol Escape
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeAbout(); });
 
 (async()=>{ await loadData(); subscribe(); })();
 </script>
