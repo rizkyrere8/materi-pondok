@@ -612,21 +612,10 @@ async function exportRaport(){
     const nama  = appIdent.nama  || '';
     const kelas = appIdent.kelas || '';
 
-    // Cari baris yang mengandung "Nama" dan "Kelas" lalu isi kolom B-nya
-    const refRange = XLSX.utils.decode_range(ws['!ref']||'A1:E40');
-    for(let r = refRange.s.r; r <= refRange.e.r; r++){
-      const cellA = ws[XLSX.utils.encode_cell({r, c:0})];
-      if(!cellA || typeof cellA.v !== 'string') continue;
-      const val = cellA.v.toLowerCase();
-      if(val.includes('nama')){
-        const refB = XLSX.utils.encode_cell({r, c:1});
-        ws[refB] = {t:'s', v: nama};
-      }
-      if(val.includes('kelas')){
-        const refB = XLSX.utils.encode_cell({r, c:1});
-        ws[refB] = {t:'s', v: kelas};
-      }
-    }
+    // Tulis langsung ke A2 dan A3 — gabungkan label + nilai dalam satu cell
+    // karena kolom B kosong di template dan tidak bisa di-create dengan cellStyles
+    ws['A2'] = { t:'s', v: 'Nama : ' + nama };
+    ws['A3'] = { t:'s', v: 'Kelas : ' + kelas };
 
     // Buat map presentasi dari data
     const babMap = buildBabMap();
