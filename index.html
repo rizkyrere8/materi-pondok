@@ -186,7 +186,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 .about-overlay.open .about-card{transform:scale(1) translateY(0);}
 .about-close{position:absolute;top:16px;right:16px;background:var(--surface-2);border:1.5px solid var(--border);cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-3);transition:all .15s;z-index:1;}
 .about-close:hover{background:var(--border);color:var(--ink);}
-.about-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;box-shadow:0 8px 24px rgba(99,102,241,.3);}
+.about-avatar{width:72px;height:72px;border-radius:50%;background:#d97757;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(217,119,87,.4);}
 .about-name{font-size:22px;font-weight:800;color:var(--ink);text-align:center;margin-bottom:3px;letter-spacing:-.3px;}
 .about-role{font-size:11px;color:var(--ink-3);text-align:center;margin-bottom:18px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
 .about-divider{height:1.5px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:0 0 18px;}
@@ -281,7 +281,17 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 <div class="about-overlay" id="aboutOverlay" onclick="if(event.target===this)closeAbout()">
   <div class="about-card">
     <button class="about-close" onclick="closeAbout()">✕</button>
-    <div class="about-avatar">🤖</div>
+    <div class="about-avatar">
+      <svg viewBox="0 0 100 100" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 5.5C25.4 5.5 5.5 25.4 5.5 50S25.4 94.5 50 94.5 94.5 74.6 94.5 50 74.6 5.5 50 5.5zm0 6c21.3 0 38.5 17.2 38.5 38.5S71.3 88.5 50 88.5 11.5 71.3 11.5 50 28.7 11.5 50 11.5z" fill="white" opacity="0"/>
+        <!-- Logo Claude asterisk -->
+        <g transform="translate(50,50)">
+          <line x1="0" y1="-28" x2="0" y2="28" stroke="white" stroke-width="9" stroke-linecap="round"/>
+          <line x1="-24.2" y1="-14" x2="24.2" y2="14" stroke="white" stroke-width="9" stroke-linecap="round"/>
+          <line x1="24.2" y1="-14" x2="-24.2" y2="14" stroke="white" stroke-width="9" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
     <div class="about-name">Claude</div>
     <div class="about-role">AI Assistant · Anthropic</div>
     <div class="about-divider"></div>
