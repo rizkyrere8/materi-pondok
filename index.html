@@ -166,6 +166,31 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 .status-pill.error .sdot{background:#ef4444;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
+/* HALAMAN PILIH SANTRI */
+.santri-pick-screen{display:block;}
+.santri-pick-screen.hidden{display:none;}
+.detail-screen{display:none;}
+.detail-screen.active{display:block;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:7px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.85);cursor:pointer;margin-bottom:16px;transition:all .15s;font-family:var(--font);}
+.back-btn:hover{background:rgba(255,255,255,.18);}
+.santri-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.santri-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);padding:20px 18px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-xs);}
+.santri-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.santri-card:active{transform:scale(.97);}
+.sc-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;}
+.sc-nama{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sc-kelas{font-size:12px;color:var(--ink-3);margin-bottom:12px;font-weight:500;}
+.sc-pct{font-size:18px;font-weight:800;}
+.sc-pct.g{color:var(--good);}
+.sc-pct.w{color:var(--warn);}
+.sc-pct.b{color:var(--bad);}
+.sc-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
+.sc-bar-fill{height:100%;border-radius:2px;}
+.sc-bar-fill.g{background:var(--good);}
+.sc-bar-fill.w{background:var(--warn);}
+.sc-bar-fill.b{background:var(--bad);}
+.santri-empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft);}
+
 @media(max-width:620px){
   .summary-grid{grid-template-columns:repeat(2,1fr);}
   .hero{padding:36px 16px 72px;}
@@ -207,8 +232,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
       <span id="eyebrowTxt">Menghubungkan…</span>
     </div>
     <h1>Progres <span>Materi Pondok</span></h1>
-    <p class="hero-sub">Pantauan Materi pondok · diperbarui secara langsung</p>
-    <div class="hero-identity">
+    <p class="hero-sub" id="heroSub">Pantauan Materi pondok · diperbarui secara langsung</p>
+    <div class="hero-identity" id="heroIdentity" style="display:none">
       <div class="hero-id-item">
         <div class="hero-id-label">Nama</div>
         <div class="hero-id-val empty" id="idNama">—</div>
@@ -233,7 +258,19 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 </div>
 
 <div class="main">
-  <div class="summary-grid" id="summaryGrid" style="display:none">
+
+  <!-- HALAMAN PILIH SANTRI -->
+  <div class="santri-pick-screen" id="santriPickScreen">
+    <div class="sec-label">Pilih Santri</div>
+    <div class="santri-grid" id="santriGrid">
+      <div class="state-box"><div class="spinner"></div><div class="state-title">Memuat...</div></div>
+    </div>
+  </div>
+
+  <!-- HALAMAN DETAIL SANTRI -->
+  <div class="detail-screen" id="detailScreen">
+    <button class="back-btn" onclick="backToSantriList()">← Semua Santri</button>
+    <div class="summary-grid" id="summaryGrid" style="display:none">
     <div class="sum-card c-total">
       <div class="sum-label">Total Materi</div>
       <div class="sum-val" id="sumTotal">0</div>
@@ -251,14 +288,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
     </div>
   </div>
 
-  <div class="sec-label">Daftar Materi</div>
-  <div class="materi-list" id="materiList">
-    <div class="state-box">
-      <div class="spinner"></div>
-      <div class="state-title">Memuat data…</div>
-      <div class="state-sub">Mengambil data dari server</div>
+    <div class="sec-label">Daftar Materi</div>
+    <div class="materi-list" id="materiList">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="state-title">Memuat data…</div>
+        <div class="state-sub">Mengambil data dari server</div>
+      </div>
     </div>
-  </div>
+  </div><!-- end detail-screen -->
 </div>
 
 <div class="fixed-actions">
@@ -858,7 +896,133 @@ function closeAbout(){
 // Tutup modal dengan tombol Escape
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeAbout(); });
 
-(async()=>{ await loadData(); subscribe(); })();
+
+/* ---- Multi-santri state ---- */
+let _allSantri = [];
+let _currentSantriId = null;
+let _santriChannel = null;
+
+/* ---- Load daftar santri ---- */
+async function loadSantriList(){
+  setStatus('Memuat daftar santri…','loading');
+  try{
+    const {data, error} = await _sb.from('santri').select('*').order('created_at',{ascending:true});
+    if(error) throw error;
+    _allSantri = data || [];
+    renderSantriGrid(_allSantri);
+    setStatus(_allSantri.length + ' santri terdaftar','ok');
+    document.getElementById('liveDot').className='live-dot on';
+    document.getElementById('eyebrowTxt').textContent='Data Langsung';
+  } catch(e){
+    setStatus('Gagal memuat santri','error');
+    document.getElementById('santriGrid').innerHTML = '<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Gagal memuat</div><div class="state-sub">Refresh halaman</div></div>';
+    console.error(e);
+  }
+}
+
+/* ---- Render grid santri ---- */
+function renderSantriGrid(list){
+  const el = document.getElementById('santriGrid');
+  if(!list || list.length === 0){
+    el.innerHTML = '<div class="santri-empty-state"><div style="font-size:40px;margin-bottom:12px">🕌</div><div style="font-size:16px;font-weight:700;color:var(--ink)">Belum ada santri</div><div style="font-size:13px;color:var(--ink-3);margin-top:6px">Tambahkan santri di Kertas Pantau</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(s => {
+    const inisial = (s.nama||'?').charAt(0).toUpperCase();
+    return `<div class="santri-card" onclick="bukaSantri('${s.id}')">
+      <div class="sc-avatar">${inisial}</div>
+      <div class="sc-nama">${s.nama||''}</div>
+      <div class="sc-kelas">${s.kelas||'—'}</div>
+      <div class="sc-pct" id="sc-pct-${s.id}">…</div>
+      <div class="sc-bar"><div class="sc-bar-fill" id="sc-bar-${s.id}" style="width:0%"></div></div>
+    </div>`;
+  }).join('');
+  // Load pct per santri
+  list.forEach(s => loadSantriPct(s));
+}
+
+async function loadSantriPct(santri){
+  try{
+    const {data:rows} = await _sb.from('progres_materi').select('data').eq('santri_id', santri.id).limit(1);
+    const d = rows && rows[0] ? rows[0].data : [];
+    let totH=0,totS=0;
+    (d||[]).forEach(row => (row.bab||[]).forEach(b => {
+      const h=Number(b.halaman)||0, s=Math.min(Math.max(Number(b.sisa)||0,0),h);
+      totH+=h; totS+=s;
+    }));
+    const pct = totH<=0?0:Math.round(((totH-totS)/totH)*100);
+    const c = pct>=80?'g':pct>=40?'w':'b';
+    const pEl = document.getElementById('sc-pct-'+santri.id);
+    const bEl = document.getElementById('sc-bar-'+santri.id);
+    if(pEl){ pEl.textContent=pct+'%'; pEl.className='sc-pct '+c; }
+    if(bEl){ bEl.style.width=pct+'%'; bEl.className='sc-bar-fill '+c; }
+  } catch(e){}
+}
+
+/* ---- Buka detail santri ---- */
+async function bukaSantri(santriId){
+  _currentSantriId = santriId;
+  const santri = _allSantri.find(s=>s.id===santriId) || {};
+
+  // Tampilkan detail screen
+  document.getElementById('santriPickScreen').classList.add('hidden');
+  document.getElementById('detailScreen').classList.add('active');
+  document.getElementById('heroIdentity').style.display='flex';
+  document.getElementById('heroSub').textContent = (santri.kelas||'') ? santri.kelas : 'Materi pondok';
+
+  setStatus('Memuat data santri…','loading');
+  await loadData(santriId);
+  subscribeToSantri(santriId);
+}
+
+function backToSantriList(){
+  _currentSantriId = null;
+  if(_santriChannel){ _sb.removeChannel(_santriChannel); _santriChannel=null; }
+  document.getElementById('detailScreen').classList.remove('active');
+  document.getElementById('santriPickScreen').classList.remove('hidden');
+  document.getElementById('heroIdentity').style.display='none';
+  document.getElementById('heroSub').textContent='Pantauan Materi pondok · diperbarui secara langsung';
+  document.getElementById('summaryGrid').style.display='none';
+  document.getElementById('materiList').innerHTML='';
+  appData=[]; appIdent={nama:'',kelas:''};
+}
+
+/* ---- Load data satu santri ---- */
+async function loadData(santriId){
+  try{
+    const {data:rows,error} = await _sb.from('progres_materi').select('*').eq('santri_id',santriId).limit(1);
+    if(error) throw error;
+    if(rows && rows.length>0){
+      const row = rows[0];
+      lastUpd = row.updated_at;
+      if(Array.isArray(row.data) && row.data.length>0) appData = row.data;
+      if(row.identity && (row.identity.nama||row.identity.kelas)) appIdent = row.identity;
+    }
+    render();
+    document.getElementById('liveDot').className='live-dot on';
+    document.getElementById('eyebrowTxt').textContent='Data Langsung';
+    setStatus('Live · '+fmtTime(lastUpd),'ok');
+  } catch(e){
+    setStatus('Gagal memuat data','error');
+    console.error(e);
+  }
+}
+
+function subscribeToSantri(santriId){
+  if(_santriChannel) _sb.removeChannel(_santriChannel);
+  _santriChannel = _sb.channel('pondok-santri-'+santriId)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'progres_materi',filter:`santri_id=eq.${santriId}`},payload=>{
+      const n = payload.new;
+      if(Array.isArray(n?.data)) appData = n.data;
+      if(n?.identity && (n.identity.nama||n.identity.kelas)) appIdent = n.identity;
+      if(n?.updated_at) lastUpd = n.updated_at;
+      render();
+      setStatus('Diperbarui · '+fmtTime(lastUpd),'ok');
+    })
+    .subscribe();
+}
+
+(async()=>{ await loadSantriList(); })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
