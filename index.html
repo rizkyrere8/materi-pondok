@@ -251,7 +251,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 </div>
 
 <div class="actions-bar">
-  <button class="btn btn-export" onclick="exportHtml()">
+  <button class="back-btn" id="backBtn" onclick="backToSantriList()" style="display:none">
+    ← Semua Santri
+  </button>
+  <button class="btn btn-export" id="eksporHtmlBtn" onclick="exportHtml()" style="display:none">
     <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Ekspor HTML
   </button>
@@ -269,7 +272,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 
   <!-- HALAMAN DETAIL SANTRI -->
   <div class="detail-screen" id="detailScreen">
-    <button class="back-btn" onclick="backToSantriList()">← Semua Santri</button>
     <div class="summary-grid" id="summaryGrid" style="display:none">
     <div class="sum-card c-total">
       <div class="sum-label">Total Materi</div>
@@ -969,6 +971,9 @@ async function bukaSantri(santriId){
   document.getElementById('detailScreen').classList.add('active');
   document.getElementById('heroIdentity').style.display='flex';
   document.getElementById('heroSub').textContent = (santri.kelas||'') ? santri.kelas : 'Materi pondok';
+  // Tampilkan tombol back & ekspor HTML
+  document.getElementById('backBtn').style.display='inline-flex';
+  document.getElementById('eksporHtmlBtn').style.display='inline-flex';
 
   setStatus('Memuat data santri…','loading');
   await loadData(santriId);
@@ -984,7 +989,12 @@ function backToSantriList(){
   document.getElementById('heroSub').textContent='Pantauan Materi pondok · diperbarui secara langsung';
   document.getElementById('summaryGrid').style.display='none';
   document.getElementById('materiList').innerHTML='';
+  // Sembunyikan tombol back & ekspor HTML
+  document.getElementById('backBtn').style.display='none';
+  document.getElementById('eksporHtmlBtn').style.display='none';
   appData=[]; appIdent={nama:'',kelas:''};
+  // Refresh daftar santri
+  loadSantriList();
 }
 
 /* ---- Load data satu santri ---- */
