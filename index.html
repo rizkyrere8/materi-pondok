@@ -221,6 +221,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 .about-badge{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:99px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--ink-2);}
 .about-footer{font-size:11px;color:var(--ink-4);text-align:center;font-weight:500;line-height:1.7;}
 .about-footer strong{color:var(--primary);}
+
+.list-tools{display:flex;gap:10px;align-items:center;margin:-2px 0 16px;flex-wrap:wrap}.search-wrap{position:relative;flex:1;min-width:220px}.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-4);pointer-events:none}.search-input,.filter-select{width:100%;font-family:var(--font);font-size:13px;font-weight:600;color:var(--ink);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px;outline:none}.search-input{padding-left:36px}.search-input:focus,.filter-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.12)}.filter-select{width:auto;min-width:145px;cursor:pointer}.tool-btn{border:1.5px solid var(--border-2);background:var(--surface);color:var(--ink-2);border-radius:var(--radius-sm);padding:10px 12px;font:700 12px var(--font);cursor:pointer}.tool-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}.result-count{font-size:11px;color:var(--ink-3);font-weight:600;min-width:100%}@media(max-width:620px){.search-wrap{min-width:100%}.filter-select,.tool-btn{flex:1}}
 </style>
 </head>
 <body>
@@ -265,6 +267,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
   <!-- HALAMAN PILIH SANTRI -->
   <div class="santri-pick-screen" id="santriPickScreen">
     <div class="sec-label">Pilih Santri</div>
+    <div class="list-tools"><div class="search-wrap"><span class="search-icon">⌕</span><input class="search-input" id="santriSearch" type="search" placeholder="Cari nama atau kelas…" autocomplete="off"></div><span class="result-count" id="santriCount">Memuat daftar santri…</span></div>
     <div class="santri-grid" id="santriGrid">
       <div class="state-box"><div class="spinner"></div><div class="state-title">Memuat...</div></div>
     </div>
@@ -291,6 +294,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
   </div>
 
     <div class="sec-label">Daftar Materi</div>
+    <div class="list-tools"><div class="search-wrap"><span class="search-icon">⌕</span><input class="search-input" id="materiSearch" type="search" placeholder="Cari materi atau bab…" autocomplete="off"></div><select class="filter-select" id="materiFilter" aria-label="Filter progres materi"><option value="all">Semua progres</option><option value="unfinished">Belum selesai</option><option value="done">Sudah selesai</option></select><button class="tool-btn" id="toggleAllBtn" type="button" onclick="toggleAllMateri()">Buka semua</button><span class="result-count" id="materiCount"></span></div>
     <div class="materi-list" id="materiList">
       <div class="state-box">
         <div class="spinner"></div>
@@ -364,6 +368,8 @@ const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let appData  = [];
 let appIdent = {nama:'',kelas:''};
+let _materiQuery = '';
+let _materiFilter = 'all';
 let lastUpd  = null;
 let openMap  = {};
 
@@ -424,6 +430,10 @@ function render(){
 
   // Materi
   const list = document.getElementById('materiList');
+  const q = _materiQuery.trim().toLowerCase();
+  const visibleData = appData.filter(row => { const t=rowTot(row), pct=calcPct(t.h,t.s); const text=[row.nama||'',...(row.bab||[]).map(b=>b.nama||'')].join(' ').toLowerCase(); return (!q||text.includes(q))&&(_materiFilter==='all'||(_materiFilter==='done'?pct>=100:pct<100)); });
+  const countEl=document.getElementById('materiCount'); if(countEl) countEl.textContent=`${visibleData.length} dari ${appData.length} materi`;
+  const toggleBtn=document.getElementById('toggleAllBtn'); if(toggleBtn) toggleBtn.textContent=visibleData.length&&visibleData.every(row=>openMap[row.id])?'Tutup semua':'Buka semua';
   if(appData.length===0){
     list.innerHTML=`<div class="state-box"><div class="state-icon">📭</div>
       <div class="state-title">Belum ada data</div>
@@ -431,7 +441,8 @@ function render(){
     return;
   }
 
-  list.innerHTML = appData.map((row,i)=>{
+  if(visibleData.length===0){ list.innerHTML='<div class="state-box"><div class="state-icon">🔎</div><div class="state-title">Materi tidak ditemukan</div><div class="state-sub">Coba ubah kata kunci atau filter progres.</div></div>'; return; }
+  list.innerHTML = visibleData.map((row,i)=>{
     const t   = rowTot(row);
     const pct = calcPct(t.h, t.s);
     const c   = cls(pct);
@@ -487,11 +498,9 @@ function render(){
   }).join('');
 }
 
-function toggle(id){
-  openMap[id]=!openMap[id];
-  const el=document.getElementById('mc-'+id);
-  if(el) el.className='materi-card'+(openMap[id]?' open':'');
-}
+function toggle(id){ openMap[id]=!openMap[id]; const el=document.getElementById('mc-'+id); if(el) el.className='materi-card'+(openMap[id]?' open':''); }
+function toggleAllMateri(){ const shouldOpen=appData.some(row=>!openMap[row.id]); appData.forEach(row=>openMap[row.id]=shouldOpen); render(); }
+function applyMateriTools(){ _materiQuery=document.getElementById('materiSearch')?.value||''; _materiFilter=document.getElementById('materiFilter')?.value||'all'; render(); }
 
 async function loadData(){
   setStatus('Memuat data…','loading');
@@ -925,6 +934,8 @@ async function loadSantriList(){
 /* ---- Render grid santri ---- */
 function renderSantriGrid(list){
   const el = document.getElementById('santriGrid');
+  const countEl = document.getElementById('santriCount');
+  if(countEl) countEl.textContent=`${list ? list.length : 0} santri ditampilkan`;
   if(!list || list.length === 0){
     el.innerHTML = '<div class="santri-empty-state"><div style="font-size:40px;margin-bottom:12px">🕌</div><div style="font-size:16px;font-weight:700;color:var(--ink)">Belum ada santri</div><div style="font-size:13px;color:var(--ink-3);margin-top:6px">Tambahkan santri di Kertas Pantau</div></div>';
     return;
@@ -1032,6 +1043,9 @@ function subscribeToSantri(santriId){
     .subscribe();
 }
 
+document.getElementById('santriSearch')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderSantriGrid(_allSantri.filter(x=>`${x.nama||''} ${x.kelas||''}`.toLowerCase().includes(q)));});
+document.getElementById('materiSearch')?.addEventListener('input',applyMateriTools);
+document.getElementById('materiFilter')?.addEventListener('change',applyMateriTools);
 (async()=>{ await loadSantriList(); })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
