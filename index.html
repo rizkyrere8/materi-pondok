@@ -10,7 +10,6 @@
 <meta http-equiv="expires" content="0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   --ink:#0f1117;--ink-2:#3d4259;--ink-3:#7c829a;--ink-4:#b0b5c8;
@@ -362,12 +361,27 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-
 </div>
 
 <script>
-const SUPA_URL = 'https://siinsjpvzwrriqwrbgpd.supabase.co';
-const SUPA_KEY = 'sb_publishable_SBjBS9QsXaruioOpKDtSVg_URP59zAw';
-const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-
+// Database publik Google Sheets — tab Santri dan Progres Materi.
+const GOOGLE_SHEET_ID = '1AEXJDYFXwcVu0MVVvjszDkK0fgZb5xLqLPMkpMWm8ns';
+const GOOGLE_SHEET_BASE = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq`;
 let appData  = [];
 let appIdent = {nama:'',kelas:''};
+let _sheetSantri = [];
+let _sheetProgress = [];
+let _sheetPollTimer = null;
+
+async function readPublicSheet(sheetName){
+  const url = `${GOOGLE_SHEET_BASE}?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const text = await fetch(url, {cache:'no-store'}).then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); });
+  const json = JSON.parse(text.replace(/^[^{]*\(/,'').replace(/\);?\s*$/,''));
+  const table = json.table || {};
+  const rows = (table.rows || []).map(row => (row.c || []).map(cell => cell && cell.v !== null && cell.v !== undefined ? cell.v : ''));
+  const headers = rows.shift() || [];
+  return rows.filter(row => row.some(v => String(v).trim() !== '')).map(row => Object.fromEntries(headers.map((h,i)=>[String(h), row[i] ?? ''])));
+}
+function parseJsonCell(value, fallback){ try { return value ? JSON.parse(value) : fallback; } catch(e) { return fallback; } }
+
+let appDataLoaded = false;
 let _materiQuery = '';
 let _materiFilter = 'all';
 let lastUpd  = null;
@@ -503,45 +517,32 @@ function toggleAllMateri(){ const shouldOpen=appData.some(row=>!openMap[row.id])
 function applyMateriTools(){ _materiQuery=document.getElementById('materiSearch')?.value||''; _materiFilter=document.getElementById('materiFilter')?.value||'all'; render(); }
 
 async function loadData(){
-  setStatus('Memuat data…','loading');
+  setStatus('Memuat data Google Sheets…','loading');
   try{
-    const {data:rows,error} = await _sb.from('progres_materi').select('*').limit(1);
-    if(error) throw error;
-    if(rows && rows.length>0){
-      const row = rows[0];
-      lastUpd = row.updated_at;
-      if(Array.isArray(row.data) && row.data.length>0) appData = row.data;
-      // Ambil identitas dari kolom identity
-      if(row.identity && (row.identity.nama || row.identity.kelas)){
-        appIdent = row.identity;
-      }
-    }
+    _sheetSantri = await readPublicSheet('Santri');
+    _sheetProgress = await readPublicSheet('Progres Materi');
+    if(_currentSantriId) applySheetProgress(_currentSantriId);
     render();
     document.getElementById('liveDot').className='live-dot on';
-    document.getElementById('eyebrowTxt').textContent='Data Langsung';
-    setStatus('Live · '+fmtTime(lastUpd),'ok');
+    document.getElementById('eyebrowTxt').textContent='Google Sheets';
+    setStatus('Terhubung ke Google Sheets','ok');
   } catch(e){
     document.getElementById('eyebrowTxt').textContent='Koneksi Gagal';
-    setStatus('Gagal memuat data','error');
-    document.getElementById('materiList').innerHTML=`<div class="state-box">
-      <div class="state-icon">⚠️</div>
-      <div class="state-title">Gagal memuat data</div>
-      <div class="state-sub">Periksa koneksi internet lalu refresh halaman.</div></div>`;
+    setStatus('Gagal memuat Google Sheets','error');
+    document.getElementById('materiList').innerHTML=`<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Gagal memuat database</div><div class="state-sub">Periksa akses publik Google Sheet lalu refresh halaman.</div></div>`;
     console.error(e);
   }
 }
+function applySheetProgress(santriId){
+  const row = _sheetProgress.find(x => String(x.santri_id) === String(santriId));
+  appData = row ? parseJsonCell(row.data_json, []) : [];
+  appIdent = row ? parseJsonCell(row.identity_json, {}) : {};
+  lastUpd = row ? row.updated_at : null;
+}
 
 function subscribe(){
-  _sb.channel('pondok-viewer')
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'progres_materi'},payload=>{
-      const n = payload.new;
-      if(Array.isArray(n?.data)) appData = n.data;
-      if(n?.identity && (n.identity.nama||n.identity.kelas)) appIdent = n.identity;
-      if(n?.updated_at) lastUpd = n.updated_at;
-      render();
-      setStatus('Diperbarui · '+fmtTime(lastUpd),'ok');
-    })
-    .subscribe();
+  clearInterval(_sheetPollTimer);
+  _sheetPollTimer = setInterval(() => loadData(), 30000);
 }
 
 function exportHtml(){
@@ -917,16 +918,16 @@ let _santriChannel = null;
 async function loadSantriList(){
   setStatus('Memuat daftar santri…','loading');
   try{
-    const {data, error} = await _sb.from('santri').select('*').order('created_at',{ascending:true});
-    if(error) throw error;
-    _allSantri = data || [];
+    _sheetSantri = await readPublicSheet('Santri');
+    _sheetProgress = await readPublicSheet('Progres Materi');
+    _allSantri = _sheetSantri;
     renderSantriGrid(_allSantri);
-    setStatus(_allSantri.length + ' santri terdaftar','ok');
+    setStatus(_allSantri.length + ' santri terdaftar · Google Sheets','ok');
     document.getElementById('liveDot').className='live-dot on';
-    document.getElementById('eyebrowTxt').textContent='Data Langsung';
+    document.getElementById('eyebrowTxt').textContent='Google Sheets';
   } catch(e){
     setStatus('Gagal memuat santri','error');
-    document.getElementById('santriGrid').innerHTML = '<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Gagal memuat</div><div class="state-sub">Refresh halaman</div></div>';
+    document.getElementById('santriGrid').innerHTML = '<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Gagal memuat</div><div class="state-sub">Periksa akses publik Google Sheet lalu refresh.</div></div>';
     console.error(e);
   }
 }
@@ -956,17 +957,13 @@ function renderSantriGrid(list){
 
 async function loadSantriPct(santri){
   try{
-    const {data:rows} = await _sb.from('progres_materi').select('data').eq('santri_id', santri.id).limit(1);
-    const d = rows && rows[0] ? rows[0].data : [];
+    const row = _sheetProgress.find(x => String(x.santri_id) === String(santri.id));
+    const d = row ? parseJsonCell(row.data_json, []) : [];
     let totH=0,totS=0;
-    (d||[]).forEach(row => (row.bab||[]).forEach(b => {
-      const h=Number(b.halaman)||0, s=Math.min(Math.max(Number(b.sisa)||0,0),h);
-      totH+=h; totS+=s;
-    }));
+    (d||[]).forEach(row => (row.bab||[]).forEach(b => { const h=Number(b.halaman)||0, s=Math.min(Math.max(Number(b.sisa)||0,0),h); totH+=h; totS+=s; }));
     const pct = totH<=0?0:Math.round(((totH-totS)/totH)*100);
     const c = pct>=80?'g':pct>=40?'w':'b';
-    const pEl = document.getElementById('sc-pct-'+santri.id);
-    const bEl = document.getElementById('sc-bar-'+santri.id);
+    const pEl = document.getElementById('sc-pct-'+santri.id), bEl = document.getElementById('sc-bar-'+santri.id);
     if(pEl){ pEl.textContent=pct+'%'; pEl.className='sc-pct '+c; }
     if(bEl){ bEl.style.width=pct+'%'; bEl.className='sc-bar-fill '+c; }
   } catch(e){}
@@ -993,7 +990,8 @@ async function bukaSantri(santriId){
 
 function backToSantriList(){
   _currentSantriId = null;
-  if(_santriChannel){ _sb.removeChannel(_santriChannel); _santriChannel=null; }
+  if(_sheetPollTimer){ clearInterval(_sheetPollTimer); _sheetPollTimer=null; }
+  _santriChannel=null;
   document.getElementById('detailScreen').classList.remove('active');
   document.getElementById('santriPickScreen').classList.remove('hidden');
   document.getElementById('heroIdentity').style.display='none';
@@ -1011,36 +1009,21 @@ function backToSantriList(){
 /* ---- Load data satu santri ---- */
 async function loadData(santriId){
   try{
-    const {data:rows,error} = await _sb.from('progres_materi').select('*').eq('santri_id',santriId).limit(1);
-    if(error) throw error;
-    if(rows && rows.length>0){
-      const row = rows[0];
-      lastUpd = row.updated_at;
-      if(Array.isArray(row.data) && row.data.length>0) appData = row.data;
-      if(row.identity && (row.identity.nama||row.identity.kelas)) appIdent = row.identity;
-    }
+    if(!_sheetSantri.length) _sheetSantri = await readPublicSheet('Santri');
+    if(!_sheetProgress.length) _sheetProgress = await readPublicSheet('Progres Materi');
+    applySheetProgress(santriId);
     render();
     document.getElementById('liveDot').className='live-dot on';
-    document.getElementById('eyebrowTxt').textContent='Data Langsung';
-    setStatus('Live · '+fmtTime(lastUpd),'ok');
-  } catch(e){
-    setStatus('Gagal memuat data','error');
-    console.error(e);
-  }
+    document.getElementById('eyebrowTxt').textContent='Google Sheets';
+    setStatus('Terhubung ke Google Sheets','ok');
+  } catch(e){ setStatus('Gagal memuat data','error'); console.error(e); }
 }
 
 function subscribeToSantri(santriId){
-  if(_santriChannel) _sb.removeChannel(_santriChannel);
-  _santriChannel = _sb.channel('pondok-santri-'+santriId)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'progres_materi',filter:`santri_id=eq.${santriId}`},payload=>{
-      const n = payload.new;
-      if(Array.isArray(n?.data)) appData = n.data;
-      if(n?.identity && (n.identity.nama||n.identity.kelas)) appIdent = n.identity;
-      if(n?.updated_at) lastUpd = n.updated_at;
-      render();
-      setStatus('Diperbarui · '+fmtTime(lastUpd),'ok');
-    })
-    .subscribe();
+  clearInterval(_sheetPollTimer);
+  _sheetPollTimer = setInterval(async () => {
+    try { _sheetProgress = await readPublicSheet('Progres Materi'); applySheetProgress(santriId); render(); setStatus('Diperbarui dari Google Sheets','ok'); } catch(e) { console.warn(e); }
+  }, 30000);
 }
 
 document.getElementById('santriSearch')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderSantriGrid(_allSantri.filter(x=>`${x.nama||''} ${x.kelas||''}`.toLowerCase().includes(q)));});
